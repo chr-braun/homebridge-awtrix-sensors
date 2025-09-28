@@ -1262,7 +1262,14 @@ class AwtrixConfigUI {
         this.availableSensors.forEach(sensor => {
             const option = document.createElement('option');
             option.value = sensor.id;
-            option.textContent = `${sensor.name} (${sensor.type}) - ${sensor.lastValue}${sensor.unit}`;
+            
+            // Create enhanced display text
+            const qualityIndicator = sensor.quality ? ` (${Math.round(sensor.quality * 100)}%)` : '';
+            const sourceIndicator = sensor.source === 'scanned' ? ' 🔍' : ' 📡';
+            const valueText = sensor.lastValue ? `${sensor.lastValue}${sensor.unit || ''}` : 'Kein Wert';
+            
+            option.textContent = `${sensor.name} (${sensor.type}) - ${valueText}${qualityIndicator}${sourceIndicator}`;
+            option.title = `Topic: ${sensor.topic}\nTyp: ${sensor.type}\nWert: ${valueText}\nQualität: ${sensor.quality ? Math.round(sensor.quality * 100) + '%' : 'Unbekannt'}`;
             option.dataset.sensor = JSON.stringify(sensor);
             dropdown.appendChild(option);
         });
@@ -1670,4 +1677,182 @@ function updateSimpleRulePreview() {
     
     preview.innerHTML = `${selectedIcon} ${displayText}`;
     preview.style.color = selectedColor;
+}
+
+// Enhanced sensor dropdown functionality
+function onSensorSelected() {
+    const sensorSelect = document.getElementById('rule-sensor-select');
+    const sensorInfo = document.getElementById('sensor-info');
+    const templateSuggestions = document.getElementById('template-suggestions');
+    
+    if (!sensorSelect || !sensorInfo) return;
+    
+    const selectedSensorId = sensorSelect.value;
+    if (!selectedSensorId) {
+        sensorInfo.style.display = 'none';
+        templateSuggestions.style.display = 'none';
+        return;
+    }
+    
+    // Find sensor data
+    const sensor = window.availableSensors?.find(s => s.id === selectedSensorId);
+    if (!sensor) return;
+    
+    // Update sensor info display
+    const sensorName = sensorInfo.querySelector('.sensor-name');
+    const sensorType = sensorInfo.querySelector('.sensor-type');
+    const sensorValue = sensorInfo.querySelector('.sensor-value');
+    const sensorTopic = sensorInfo.querySelector('.sensor-topic');
+    
+    if (sensorName) sensorName.textContent = `Name: ${sensor.name}`;
+    if (sensorType) sensorType.textContent = `Typ: ${sensor.type}`;
+    if (sensorValue) sensorValue.textContent = `Wert: ${sensor.lastValue} ${sensor.unit || ''}`;
+    if (sensorTopic) sensorTopic.textContent = `Topic: ${sensor.topic}`;
+    
+    sensorInfo.style.display = 'block';
+    
+    // Show template suggestions based on sensor type
+    showTemplateSuggestions(sensor.type);
+    
+    // Auto-select appropriate template
+    autoSelectTemplate(sensor.type);
+    
+    // Update preview
+    updateSimpleRulePreview();
+}
+
+function showTemplateSuggestions(sensorType) {
+    const templateSuggestions = document.getElementById('template-suggestions');
+    const suggestionChips = templateSuggestions.querySelector('.suggestion-chips');
+    
+    if (!templateSuggestions || !suggestionChips) return;
+    
+    // Clear existing suggestions
+    suggestionChips.innerHTML = '';
+    
+    // Define suggestions based on sensor type
+    const suggestions = {
+        'temperature': [
+            { id: 'temperature_warning', name: '🌡️ Temperatur-Warnung', description: 'Zeigt Temperatur mit Warnung' },
+            { id: 'temperature_status', name: '🌡️ Temperatur-Status', description: 'Einfache Temperaturanzeige' }
+        ],
+        'humidity': [
+            { id: 'humidity_status', name: '💧 Luftfeuchtigkeit', description: 'Zeigt Luftfeuchtigkeitsstatus' },
+            { id: 'humidity_warning', name: '💧 Feuchtigkeits-Warnung', description: 'Warnung bei hoher Luftfeuchtigkeit' }
+        ],
+        'motion': [
+            { id: 'motion_detected', name: '🏃 Bewegung erkannt', description: 'Zeigt Bewegungserkennung an' },
+            { id: 'motion_status', name: '🏃 Bewegungs-Status', description: 'Aktueller Bewegungsstatus' }
+        ],
+        'light': [
+            { id: 'light_status', name: '💡 Licht-Status', description: 'Zeigt Lichtintensität' },
+            { id: 'light_warning', name: '💡 Licht-Warnung', description: 'Warnung bei zu wenig Licht' }
+        ],
+        'pressure': [
+            { id: 'pressure_status', name: '📊 Luftdruck', description: 'Zeigt Luftdruck an' },
+            { id: 'pressure_warning', name: '📊 Druck-Warnung', description: 'Warnung bei Druckänderungen' }
+        ]
+    };
+    
+    const typeSuggestions = suggestions[sensorType] || [
+        { id: 'custom', name: '📝 Benutzerdefiniert', description: 'Eigener Text mit Variablen' }
+    ];
+    
+    // Create suggestion chips
+    typeSuggestions.forEach(suggestion => {
+        const chip = document.createElement('button');
+        chip.className = 'suggestion-chip';
+        chip.textContent = suggestion.name;
+        chip.title = suggestion.description;
+        chip.onclick = () => selectTemplateSuggestion(suggestion.id);
+        suggestionChips.appendChild(chip);
+    });
+    
+    templateSuggestions.style.display = 'block';
+}
+
+function selectTemplateSuggestion(templateId) {
+    const templateSelect = document.getElementById('rule-template-select');
+    if (templateSelect) {
+        templateSelect.value = templateId;
+        onTemplateSelected();
+    }
+    
+    // Update suggestion chips visual state
+    const chips = document.querySelectorAll('.suggestion-chip');
+    chips.forEach(chip => {
+        chip.classList.remove('selected');
+        if (chip.textContent.includes(templateId.replace('_', ' '))) {
+            chip.classList.add('selected');
+        }
+    });
+}
+
+function autoSelectTemplate(sensorType) {
+    const templateSelect = document.getElementById('rule-template-select');
+    if (!templateSelect) return;
+    
+    // Auto-select based on sensor type
+    const autoSelectMap = {
+        'temperature': 'temperature_warning',
+        'humidity': 'humidity_status',
+        'motion': 'motion_detected',
+        'light': 'light_status',
+        'pressure': 'pressure_status'
+    };
+    
+    const suggestedTemplate = autoSelectMap[sensorType];
+    if (suggestedTemplate) {
+        templateSelect.value = suggestedTemplate;
+    }
+}
+
+function onTemplateSelected() {
+    const templateSelect = document.getElementById('rule-template-select');
+    const customTextGroup = document.getElementById('custom-text-group');
+    
+    if (!templateSelect || !customTextGroup) return;
+    
+    // Show/hide custom text input based on selection
+    if (templateSelect.value === 'custom') {
+        customTextGroup.style.display = 'block';
+    } else {
+        customTextGroup.style.display = 'none';
+    }
+    
+    // Update preview
+    updateSimpleRulePreview();
+}
+
+// Enhanced sensor loading with better data
+async function loadAvailableSensors() {
+    try {
+        // Try to get sensors from platform API
+        const response = await fetch('/api/sensors');
+        if (response.ok) {
+            const sensors = await response.json();
+            window.availableSensors = sensors;
+            populateSimpleRuleSensorDropdown(sensors);
+            return;
+        }
+    } catch (error) {
+        console.log('Platform API not available, using mock data');
+    }
+    
+    // Enhanced mock data with more realistic sensor data
+    const mockSensors = [
+        { id: 'temp_1', name: 'Wohnzimmer Temperatur', type: 'temperature', topic: 'sensors/livingroom/temperature', lastValue: '22.5', unit: '°C', source: 'discovered', quality: 0.95 },
+        { id: 'temp_2', name: 'Küche Temperatur', type: 'temperature', topic: 'sensors/kitchen/temperature', lastValue: '24.1', unit: '°C', source: 'discovered', quality: 0.88 },
+        { id: 'hum_1', name: 'Küche Luftfeuchtigkeit', type: 'humidity', topic: 'sensors/kitchen/humidity', lastValue: '45', unit: '%', source: 'discovered', quality: 0.92 },
+        { id: 'hum_2', name: 'Badezimmer Luftfeuchtigkeit', type: 'humidity', topic: 'sensors/bathroom/humidity', lastValue: '65', unit: '%', source: 'scanned', quality: 0.85 },
+        { id: 'motion_1', name: 'Eingang Bewegung', type: 'motion', topic: 'sensors/entrance/motion', lastValue: '1', unit: '', source: 'scanned', quality: 0.98 },
+        { id: 'motion_2', name: 'Korridor Bewegung', type: 'motion', topic: 'sensors/corridor/motion', lastValue: '0', unit: '', source: 'scanned', quality: 0.90 },
+        { id: 'light_1', name: 'Schlafzimmer Licht', type: 'light', topic: 'sensors/bedroom/light', lastValue: '250', unit: 'lux', source: 'scanned', quality: 0.87 },
+        { id: 'light_2', name: 'Wohnzimmer Licht', type: 'light', topic: 'sensors/livingroom/light', lastValue: '1200', unit: 'lux', source: 'scanned', quality: 0.93 },
+        { id: 'press_1', name: 'Wetter Luftdruck', type: 'pressure', topic: 'weather/pressure', lastValue: '1013.25', unit: 'hPa', source: 'discovered', quality: 0.99 },
+        { id: 'press_2', name: 'Balkon Luftdruck', type: 'pressure', topic: 'sensors/balcony/pressure', lastValue: '1012.8', unit: 'hPa', source: 'discovered', quality: 0.91 }
+    ];
+    
+    window.availableSensors = mockSensors;
+    populateSimpleRuleSensorDropdown(mockSensors);
 }

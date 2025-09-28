@@ -178,12 +178,22 @@
                                 <h4>1️⃣ Sensor auswählen</h4>
                                 <div class="form-group">
                                     <label for="rule-sensor-select">Verfügbare Sensoren:</label>
-                                    <select id="rule-sensor-select" class="form-control">
-                                        <option value="">Sensor auswählen...</option>
-                                    </select>
-                                    <button class="btn btn-secondary btn-sm" onclick="loadAvailableSensors()">
-                                        <i class="fas fa-sync"></i> Sensoren laden
-                                    </button>
+                                    <div class="sensor-dropdown-container">
+                                        <select id="rule-sensor-select" class="form-control" onchange="onSensorSelected()">
+                                            <option value="">Sensor auswählen...</option>
+                                        </select>
+                                        <button class="btn btn-secondary btn-sm" onclick="loadAvailableSensors()" title="Sensoren aktualisieren">
+                                            <i class="fas fa-sync"></i>
+                                        </button>
+                                    </div>
+                                    <div id="sensor-info" class="sensor-info" style="display: none;">
+                                        <div class="sensor-details">
+                                            <div class="sensor-name"></div>
+                                            <div class="sensor-type"></div>
+                                            <div class="sensor-value"></div>
+                                            <div class="sensor-topic"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -192,18 +202,25 @@
                                 <h4>2️⃣ Anzeige wählen</h4>
                                 <div class="form-group">
                                     <label for="rule-template-select">Anzeige-Template:</label>
-                                    <select id="rule-template-select" class="form-control">
+                                    <select id="rule-template-select" class="form-control" onchange="onTemplateSelected()">
                                         <option value="">Template auswählen...</option>
                                         <option value="temperature_warning">🌡️ Temperatur-Warnung</option>
                                         <option value="motion_detected">🏃 Bewegung erkannt</option>
                                         <option value="humidity_status">💧 Luftfeuchtigkeit</option>
                                         <option value="light_status">💡 Licht-Status</option>
-                                        <option value="custom">📊 Benutzerdefiniert</option>
+                                        <option value="pressure_status">📊 Luftdruck</option>
+                                        <option value="custom">📝 Benutzerdefiniert</option>
                                     </select>
+                                    <div id="template-suggestions" class="template-suggestions" style="display: none;">
+                                        <h5>💡 Empfohlene Templates für diesen Sensortyp:</h5>
+                                        <div class="suggestion-chips">
+                                            <!-- Wird dynamisch gefüllt -->
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group" id="custom-text-group" style="display: none;">
                                     <label for="rule-custom-text">Benutzerdefinierter Text:</label>
-                                    <input type="text" id="rule-custom-text" class="form-control" placeholder="z.B. {sensor_name}: {value}{unit}">
+                                    <input type="text" id="rule-custom-text" class="form-control" placeholder="z.B. {sensor_name}: {value}{unit}" oninput="updateSimpleRulePreview()">
                                     <small>Verfügbare Variablen: {sensor_name}, {value}, {unit}</small>
                                 </div>
                             </div>
