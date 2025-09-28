@@ -14,78 +14,109 @@
             <p>Minimale Konfiguration für MQTT-Sensor-Integration</p>
         </div>
 
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="showTab('config')">
+                <i class="fas fa-cog"></i> Konfiguration
+            </button>
+            <button class="tab-btn" onclick="showTab('sensors')" id="sensors-tab" style="display: none;">
+                <i class="fas fa-microchip"></i> Gefundene Sensoren
+            </button>
+        </div>
+
         <div class="config-content">
-            <!-- MQTT Server Konfiguration -->
-            <div class="config-section">
-                <h3><i class="fas fa-server"></i> MQTT Server</h3>
-                <div class="config-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="mqtt-host">Host:</label>
-                            <input type="text" id="mqtt-host" class="form-control" placeholder="192.168.1.100">
+            <!-- Konfiguration Tab -->
+            <div id="config-tab" class="tab-content active">
+                <!-- MQTT Server Konfiguration -->
+                <div class="config-section">
+                    <h3><i class="fas fa-server"></i> MQTT Server</h3>
+                    <div class="config-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mqtt-host">Host:</label>
+                                <input type="text" id="mqtt-host" class="form-control" placeholder="192.168.1.100">
+                            </div>
+                            <div class="form-group">
+                                <label for="mqtt-port">Port:</label>
+                                <input type="number" id="mqtt-port" class="form-control" placeholder="1883">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="mqtt-port">Port:</label>
-                            <input type="number" id="mqtt-port" class="form-control" placeholder="1883">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mqtt-username">Benutzername:</label>
+                                <input type="text" id="mqtt-username" class="form-control" placeholder="mqtt_user">
+                            </div>
+                            <div class="form-group">
+                                <label for="mqtt-password">Passwort:</label>
+                                <input type="password" id="mqtt-password" class="form-control" placeholder="mqtt_password">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="testMqttConnection()">
+                                <i class="fas fa-wifi"></i> MQTT Testen
+                            </button>
+                            <button class="btn btn-success" onclick="saveConfiguration()">
+                                <i class="fas fa-save"></i> Speichern
+                            </button>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="mqtt-username">Benutzername:</label>
-                            <input type="text" id="mqtt-username" class="form-control" placeholder="mqtt_user">
+                </div>
+
+                <!-- AWTRIX Gerät Konfiguration -->
+                <div class="config-section">
+                    <h3><i class="fas fa-tv"></i> AWTRIX Gerät</h3>
+                    <div class="config-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="awtrix-ip">IP-Adresse:</label>
+                                <input type="text" id="awtrix-ip" class="form-control" placeholder="192.168.1.200">
+                            </div>
+                            <div class="form-group">
+                                <label for="awtrix-port">Port:</label>
+                                <input type="number" id="awtrix-port" class="form-control" placeholder="7001">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="mqtt-password">Passwort:</label>
-                            <input type="password" id="mqtt-password" class="form-control" placeholder="mqtt_password">
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="testAwtrixConnection()">
+                                <i class="fas fa-tv"></i> AWTRIX Testen
+                            </button>
                         </div>
                     </div>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" onclick="testMqttConnection()">
-                            <i class="fas fa-wifi"></i> MQTT Testen
+                </div>
+
+                <!-- MQTT Sensor Suche -->
+                <div class="config-section">
+                    <h3><i class="fas fa-search"></i> MQTT Sensor Suche</h3>
+                    <div class="search-container">
+                        <button class="btn btn-primary" onclick="searchMqttSensors()" id="search-btn">
+                            <i class="fas fa-search"></i> Sensoren suchen
                         </button>
-                        <button class="btn btn-success" onclick="saveConfiguration()">
-                            <i class="fas fa-save"></i> Speichern
-                        </button>
+                        <div id="search-status" class="search-status"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- AWTRIX Gerät Konfiguration -->
-            <div class="config-section">
-                <h3><i class="fas fa-tv"></i> AWTRIX Gerät</h3>
-                <div class="config-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="awtrix-ip">IP-Adresse:</label>
-                            <input type="text" id="awtrix-ip" class="form-control" placeholder="192.168.1.200">
-                        </div>
-                        <div class="form-group">
-                            <label for="awtrix-port">Port:</label>
-                            <input type="number" id="awtrix-port" class="form-control" placeholder="7001">
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" onclick="testAwtrixConnection()">
-                            <i class="fas fa-tv"></i> AWTRIX Testen
+            <!-- Sensoren Tab -->
+            <div id="sensors-tab" class="tab-content">
+                <div class="sensors-header">
+                    <h3><i class="fas fa-microchip"></i> Gefundene Sensoren</h3>
+                    <div class="sensors-actions">
+                        <button class="btn btn-secondary" onclick="refreshSensors()">
+                            <i class="fas fa-refresh"></i> Aktualisieren
+                        </button>
+                        <button class="btn btn-success" onclick="saveSensors()">
+                            <i class="fas fa-save"></i> Sensoren speichern
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- MQTT Sensor Suche -->
-            <div class="config-section">
-                <h3><i class="fas fa-search"></i> MQTT Sensor Suche</h3>
-                <div class="search-container">
-                    <button class="btn btn-primary" onclick="searchMqttSensors()" id="search-btn">
-                        <i class="fas fa-search"></i> Sensoren suchen
-                    </button>
                 </div>
                 
-                <div id="results-container" class="results-container" style="display: none;">
-                    <h4>Gefundene Sensoren:</h4>
-                    <div id="sensors-list" class="sensors-list">
-                        <!-- Sensoren werden hier angezeigt -->
-                    </div>
+                <div id="sensors-list" class="sensors-grid">
+                    <!-- Sensoren werden hier angezeigt -->
+                </div>
+                
+                <div id="no-sensors" class="no-sensors" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <p>Keine Sensoren gefunden. Führen Sie zuerst eine Suche durch.</p>
                 </div>
             </div>
         </div>

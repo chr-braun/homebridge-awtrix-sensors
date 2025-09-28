@@ -49,6 +49,44 @@
         "minimum": 1,
         "maximum": 65535,
         "description": "AWTRIX device port"
+      },
+      "discoveredSensors": {
+        "title": "Gefundene Sensoren",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Sensor Name"
+            },
+            "type": {
+              "type": "string",
+              "title": "Sensor Type"
+            },
+            "topic": {
+              "type": "string",
+              "title": "MQTT Topic"
+            },
+            "value": {
+              "type": "string",
+              "title": "Aktueller Wert"
+            },
+            "unit": {
+              "type": "string",
+              "title": "Einheit"
+            },
+            "quality": {
+              "type": "number",
+              "title": "Qualität (0-100)"
+            },
+            "lastSeen": {
+              "type": "string",
+              "title": "Zuletzt gesehen"
+            }
+          }
+        },
+        "description": "Automatisch gefundene MQTT-Sensoren"
       }
     },
     "required": ["mqttHost", "mqttPort", "mqttUsername", "mqttPassword", "awtrixIp", "awtrixPort"]
