@@ -27,20 +27,20 @@
   "author": {
     "name": "Christian Braun",
     "email": "christian@awtrix-integration.com",
-    "url": "https://github.com/christianbraun"
+    "url": "https://github.com/chr-braun"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/christianbraun/homebridge-awtrix-sensors.git"
+    "url": "https://github.com/chr-braun/homebridge-awtrix-sensors.git"
   },
   "bugs": {
-    "url": "https://github.com/christianbraun/homebridge-awtrix-sensors/issues"
+    "url": "https://github.com/chr-braun/homebridge-awtrix-sensors/issues"
   },
-  "homepage": "https://github.com/christianbraun/homebridge-awtrix-sensors#readme",
+  "homepage": "https://github.com/chr-braun/homebridge-awtrix-sensors#readme",
   "funding": {
     "type": "github",
-    "url": "https://github.com/sponsors/christianbraun"
+    "url": "https://github.com/sponsors/chr-braun"
   },
   "dependencies": {
     "axios": "^1.6.0",
