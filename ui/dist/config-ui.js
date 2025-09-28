@@ -1204,7 +1204,7 @@ class AwtrixConfigUI {
                 const result = await response.json();
                 if (result.success) {
                     this.availableSensors = result.sensors || [];
-                    this.showSensorSelectionState();
+                    this.populateSimpleRuleSensorDropdown();
                     this.showToast(`Loaded ${this.availableSensors.length} available sensors`, 'success');
                     return;
                 }
@@ -1249,230 +1249,33 @@ class AwtrixConfigUI {
             }
         ];
         
-        this.showSensorSelectionState();
+        this.populateSimpleRuleSensorDropdown();
         this.showToast(`Loaded ${this.availableSensors.length} available sensors (demo mode)`, 'info');
     }
     
     populateSimpleRuleSensorDropdown() {
-        // Show search state initially
-        this.showSensorSearchState();
-    }
-    
-    showSensorSearchState() {
-        const searchState = document.getElementById('sensor-search-state');
-        const selectionState = document.getElementById('sensor-selection-state');
-        
-        if (searchState) searchState.style.display = 'block';
-        if (selectionState) selectionState.style.display = 'none';
-    }
-    
-    showSensorSelectionState() {
-        const searchState = document.getElementById('sensor-search-state');
-        const selectionState = document.getElementById('sensor-selection-state');
-        
-        if (searchState) searchState.style.display = 'none';
-        if (selectionState) selectionState.style.display = 'block';
-        
-        // Populate both dropdown (fallback) and cards grid
-        this.populateSensorCards();
+        // Populate dropdown with available sensors
         this.populateSensorDropdown();
     }
     
-    populateSensorCards() {
-        const grid = document.getElementById('sensor-cards-grid');
-        if (!grid) return;
-        
-        grid.innerHTML = '';
-        
-        this.availableSensors.forEach(sensor => {
-            const card = this.createSensorCard(sensor);
-            grid.appendChild(card);
-        });
-    }
     
-    createSensorCard(sensor) {
-        const card = document.createElement('div');
-        card.className = 'sensor-card';
-        card.dataset.sensorId = sensor.id;
-        card.dataset.type = sensor.type;
-        card.onclick = () => this.selectSensor(sensor);
-        
-        // Round values to whole numbers
-        const roundedValue = sensor.lastValue ? Math.round(parseFloat(sensor.lastValue)) : 'N/A';
-        const quality = sensor.quality ? Math.round(sensor.quality * 100) : 0;
-        const qualityClass = quality >= 80 ? 'high' : quality >= 60 ? 'medium' : 'low';
-        
-        // Get sensor type icon
-        const typeIcons = {
-            'temperature': '🌡️',
-            'humidity': '💧',
-            'motion': '🏃',
-            'light': '💡',
-            'pressure': '📊'
-        };
-        
-        const icon = typeIcons[sensor.type] || '📊';
-        const sourceIcon = sensor.source === 'scanned' ? '🔍' : '📡';
-        
-        card.innerHTML = `
-            <div class="sensor-card-header">
-                <h4 class="sensor-name">${sensor.name}</h4>
-                <span class="sensor-type-badge">${sensor.type}</span>
-            </div>
-            
-            <div class="sensor-value-display">
-                <span class="sensor-icon">${icon}</span>
-                <span class="sensor-value">${roundedValue}</span>
-                <span class="sensor-unit">${sensor.unit || ''}</span>
-            </div>
-            
-            <div class="sensor-meta">
-                <div class="sensor-quality">
-                    <span>Qualität:</span>
-                    <div class="quality-bar">
-                        <div class="quality-fill ${qualityClass}" style="width: ${quality}%"></div>
-                    </div>
-                    <span>${quality}%</span>
-                </div>
-                <div class="sensor-source">
-                    <span>${sourceIcon}</span>
-                    <span>${sensor.source === 'scanned' ? 'Gescannt' : 'Entdeckt'}</span>
-                </div>
-            </div>
-            
-            <div class="sensor-topic">${sensor.topic}</div>
-        `;
-        
-        return card;
-    }
-    
-    selectSensor(sensor) {
-        // Remove previous selection
-        document.querySelectorAll('.sensor-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Add selection to clicked card
-        const card = document.querySelector(`[data-sensor-id="${sensor.id}"]`);
-        if (card) {
-            card.classList.add('selected');
-        }
-        
-        // Update hidden dropdown for compatibility
-        const dropdown = document.getElementById('rule-sensor-select');
-        if (dropdown) {
-            dropdown.value = sensor.id;
-        }
-        
-        // Show selected sensor info
-        this.showSelectedSensorInfo(sensor);
-        
-        // Trigger sensor selection logic
-        this.onSensorSelected(sensor);
-    }
-    
-    showSelectedSensorInfo(sensor) {
-        const selectedSensorInfo = document.getElementById('selected-sensor-info');
-        const selectedSensorDetails = document.getElementById('selected-sensor-details');
-        
-        if (!selectedSensorInfo || !selectedSensorDetails) return;
-        
-        // Round values to whole numbers
-        const roundedValue = sensor.lastValue ? Math.round(parseFloat(sensor.lastValue)) : 'N/A';
-        const quality = sensor.quality ? Math.round(sensor.quality * 100) : 0;
-        
-        // Get sensor type icon
-        const typeIcons = {
-            'temperature': '🌡️',
-            'humidity': '💧',
-            'motion': '🏃',
-            'light': '💡',
-            'pressure': '📊'
-        };
-        
-        const icon = typeIcons[sensor.type] || '📊';
-        const sourceIcon = sensor.source === 'scanned' ? '🔍' : '📡';
-        
-        selectedSensorDetails.innerHTML = `
-            <div class="selected-sensor-detail">
-                <div class="selected-sensor-detail-label">Name</div>
-                <div class="selected-sensor-detail-value">${sensor.name}</div>
-            </div>
-            <div class="selected-sensor-detail">
-                <div class="selected-sensor-detail-label">Typ</div>
-                <div class="selected-sensor-detail-value">${icon} ${sensor.type}</div>
-            </div>
-            <div class="selected-sensor-detail">
-                <div class="selected-sensor-detail-label">Aktueller Wert</div>
-                <div class="selected-sensor-detail-value">${roundedValue} ${sensor.unit || ''}</div>
-            </div>
-            <div class="selected-sensor-detail">
-                <div class="selected-sensor-detail-label">Qualität</div>
-                <div class="selected-sensor-detail-value">${quality}%</div>
-            </div>
-            <div class="selected-sensor-detail">
-                <div class="selected-sensor-detail-label">Quelle</div>
-                <div class="selected-sensor-detail-value">${sourceIcon} ${sensor.source === 'scanned' ? 'Gescannt' : 'Entdeckt'}</div>
-            </div>
-            <div class="selected-sensor-detail">
-                <div class="selected-sensor-detail-label">MQTT Topic</div>
-                <div class="selected-sensor-detail-value" style="font-family: monospace; font-size: 0.9em;">${sensor.topic}</div>
-            </div>
-        `;
-        
-        selectedSensorInfo.style.display = 'block';
-    }
-    
-    clearSelectedSensor() {
-        // Remove selection from all cards
-        document.querySelectorAll('.sensor-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        // Clear hidden dropdown
-        const dropdown = document.getElementById('rule-sensor-select');
-        if (dropdown) {
-            dropdown.value = '';
-        }
-        
-        // Hide selected sensor info
-        const selectedSensorInfo = document.getElementById('selected-sensor-info');
-        if (selectedSensorInfo) {
-            selectedSensorInfo.style.display = 'none';
-        }
-        
-        // Clear template suggestions
-        const templateSuggestions = document.getElementById('template-suggestions');
-        if (templateSuggestions) {
-            templateSuggestions.style.display = 'none';
-        }
-        
-        // Reset template selection
-        const templateSelect = document.getElementById('rule-template-select');
-        if (templateSelect) {
-            templateSelect.value = '';
-        }
-        
-        // Clear custom text
-        const customText = document.getElementById('rule-custom-text');
-        if (customText) {
-            customText.value = '';
-        }
-        
-        // Update preview
-        this.updateSimpleRulePreview();
-    }
-    
-    resetSensorSelection() {
-        this.clearSelectedSensor();
-        this.showSensorSearchState();
-    }
-    
-    onSensorSelected(sensor) {
+    onSensorSelected() {
+        const sensorSelect = document.getElementById('rule-sensor-select');
         const sensorInfo = document.getElementById('sensor-info');
         const templateSuggestions = document.getElementById('template-suggestions');
         
-        if (!sensorInfo) return;
+        if (!sensorSelect || !sensorInfo) return;
+        
+        const selectedSensorId = sensorSelect.value;
+        if (!selectedSensorId) {
+            sensorInfo.style.display = 'none';
+            if (templateSuggestions) templateSuggestions.style.display = 'none';
+            return;
+        }
+        
+        // Find sensor data
+        const sensor = this.availableSensors.find(s => s.id === selectedSensorId);
+        if (!sensor) return;
         
         // Update sensor info display
         const sensorName = sensorInfo.querySelector('.sensor-name');
@@ -2152,15 +1955,3 @@ function onTemplateSelected() {
     }
 }
 
-// Global functions for sensor selection workflow
-function clearSelectedSensor() {
-    if (window.awtrixConfigUI) {
-        window.awtrixConfigUI.clearSelectedSensor();
-    }
-}
-
-function resetSensorSelection() {
-    if (window.awtrixConfigUI) {
-        window.awtrixConfigUI.resetSensorSelection();
-    }
-}
