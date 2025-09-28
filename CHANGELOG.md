@@ -51,6 +51,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2-beta] - 2025-09-28
+
+### Added
+- **Complete GUI Implementation** - Full-featured web interface
+- **MQTT Server Configuration** - Server settings, connection testing, availability checks
+- **Sensor Display Control** - Value selection, individual durations, priorities, slot assignment
+- **Advanced Icon Management** - AWTRIX icon database with search and categories
+- **Real-time Testing** - MQTT connection tests, AWTRIX message sending
+- **Device Discovery** - Automatic AWTRIX device scanning and detection
+- **Configuration Management** - Save/load settings, persistent storage
+- **Toast Notifications** - User feedback for all operations
+- **Responsive Design** - Mobile-friendly interface
+
+### Enhanced
+- **Sensor Management** - Complete sensor lifecycle management
+- **Display Modes** - Rotation, Priority, Manual display modes
+- **Visual Controls** - Color pickers, duration sliders, slot selectors
+- **Error Handling** - Comprehensive error messages and validation
+- **API Endpoints** - RESTful API for all GUI operations
+
+### Technical Improvements
+- **Express.js Backend** - Robust server architecture
+- **Socket.IO Integration** - Real-time communication
+- **Modular Frontend** - Clean JavaScript architecture
+- **CSS Grid Layout** - Modern responsive design
+- **Configuration Persistence** - Server-side config management
+
 ## [1.0.1-2] - 2025-09-28
 
 ### Fixed
