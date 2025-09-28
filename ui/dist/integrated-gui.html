@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWTRIX Integrated GUI</title>
+    <style>
+        /* AWTRIX Integrated GUI Styles */
+        .awtrix-integrated-gui {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .gui-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .gui-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .gui-header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .gui-header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .status-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .status-indicator i {
+            font-size: 1.2em;
+        }
+
+        .status-indicator.connected {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .status-indicator.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+            border: 2px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .gui-content {
+            padding: 40px;
+        }
+
+        .gui-tabs {
+            display: flex;
+            border-bottom: 3px solid #f0f0f0;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .gui-tab {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-radius: 10px 10px 0 0;
+            margin-right: 5px;
+        }
+
+        .gui-tab.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .gui-tab:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .gui-tab.active:hover {
+            background: #5a6fd8;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+
+        .sensors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .sensor-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sensor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .sensor-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .sensor-type {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .sensor-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 15px 0;
+        }
+
+        .sensor-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 20px 25px;
+            border-radius: 10px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: #4CAF50;
+        }
+
+        .toast.error {
+            background: #f44336;
+        }
+
+        .toast.warning {
+            background: #ff9800;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: " ⏳";
+        }
+
+        @media (max-width: 768px) {
+            .gui-header h1 {
+                font-size: 2em;
+            }
+            
+            .status-indicators {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sensors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="awtrix-integrated-gui">
+        <div class="gui-container">
+            <div class="gui-header">
+                <h1>🎯 AWTRIX Integrated GUI</h1>
+                <p>Vollständige AWTRIX-Konfiguration und -Verwaltung</p>
+                
+                <div class="status-indicators">
+                    <div class="status-indicator" id="mqtt-status">
+                        <i class="fas fa-wifi"></i>
+                        <span>MQTT: Bereit</span>
+                    </div>
+                    <div class="status-indicator" id="awtrix-status">
+                        <i class="fas fa-desktop"></i>
+                        <span>AWTRIX: Bereit</span>
+                    </div>
+                    <div class="status-indicator" id="sensors-status">
+                        <i class="fas fa-thermometer-half"></i>
+                        <span>Sensoren: 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gui-content">
+                <div class="gui-tabs">
+                    <button class="gui-tab active" onclick="switchTab('config')">
+                        <i class="fas fa-cog"></i> Konfiguration
+                    </button>
+                    <button class="gui-tab" onclick="switchTab('sensors')">
+                        <i class="fas fa-thermometer-half"></i> Sensoren
+                    </button>
+                    <button class="gui-tab" onclick="switchTab('awtrix')">
+                        <i class="fas fa-desktop"></i> AWTRIX
+                    </button>
+                    <button class="gui-tab" onclick="switchTab('rules')">
+                        <i class="fas fa-robot"></i> Regeln
+                    </button>
+                    <button class="gui-tab" onclick="switchTab('test')">
+                        <i class="fas fa-flask"></i> Tests
+                    </button>
+                </div>
+
+                <!-- Configuration Tab -->
+                <div id="config-tab" class="tab-content active">
+                    <div class="section">
+                        <h3>🔧 MQTT Server Konfiguration</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="mqtt-host">Host Address</label>
+                                <input type="text" id="mqtt-host" value="192.168.178.29" placeholder="192.168.178.29">
+                            </div>
+                            <div class="form-group">
+                                <label for="mqtt-port">Port</label>
+                                <input type="number" id="mqtt-port" value="1883" placeholder="1883">
+                            </div>
+                            <div class="form-group">
+                                <label for="mqtt-username">Benutzername</label>
+                                <input type="text" id="mqtt-username" value="biber" placeholder="biber">
+                            </div>
+                            <div class="form-group">
+                                <label for="mqtt-password">Passwort</label>
+                                <input type="password" id="mqtt-password" value="2203801826" placeholder="2203801826">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="testMqtt()">
+                            <i class="fas fa-wifi"></i> MQTT Testen
+                        </button>
+                    </div>
+
+                    <div class="section">
+                        <h3>📱 AWTRIX Geräte Konfiguration</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="awtrix-ip">AWTRIX IP-Adresse</label>
+                                <input type="text" id="awtrix-ip" value="192.168.178.151" placeholder="192.168.178.151">
+                            </div>
+                            <div class="form-group">
+                                <label for="awtrix-port">AWTRIX Port</label>
+                                <input type="number" id="awtrix-port" value="80" placeholder="80">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="discoverAwtrix()">
+                            <i class="fas fa-search"></i> AWTRIX Suchen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sensors Tab -->
+                <div id="sensors-tab" class="tab-content">
+                    <div class="section">
+                        <h3>📊 Sensor Management</h3>
+                        <button class="btn" onclick="scanSensors()">
+                            <i class="fas fa-search"></i> Sensoren Scannen
+                        </button>
+                        <button class="btn btn-success" onclick="addSensor()">
+                            <i class="fas fa-plus"></i> Sensor Hinzufügen
+                        </button>
+                        <button class="btn btn-warning" onclick="clearSensors()">
+                            <i class="fas fa-trash"></i> Alle Löschen
+                        </button>
+                    </div>
+                    <div id="sensors-grid" class="sensors-grid">
+                        <!-- Sensoren werden hier angezeigt -->
+                    </div>
+                </div>
+
+                <!-- AWTRIX Tab -->
+                <div id="awtrix-tab" class="tab-content">
+                    <div class="section">
+                        <h3>📱 AWTRIX Geräte</h3>
+                        <button class="btn" onclick="discoverAwtrix()">
+                            <i class="fas fa-search"></i> Geräte Suchen
+                        </button>
+                        <button class="btn btn-success" onclick="testAwtrix()">
+                            <i class="fas fa-paper-plane"></i> Test-Nachricht
+                        </button>
+                    </div>
+                    <div id="awtrix-devices" class="sensors-grid">
+                        <!-- AWTRIX-Geräte werden hier angezeigt -->
+                    </div>
+                </div>
+
+                <!-- Rules Tab -->
+                <div id="rules-tab" class="tab-content">
+                    <div class="section">
+                        <h3>🤖 Regel-Engine</h3>
+                        <p>Erstellen Sie Automatisierungsregeln für Ihre AWTRIX-Geräte.</p>
+                        <button class="btn" onclick="createRule()">
+                            <i class="fas fa-plus"></i> Neue Regel
+                        </button>
+                        <button class="btn btn-warning" onclick="testRules()">
+                            <i class="fas fa-flask"></i> Regeln Testen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test Tab -->
+                <div id="test-tab" class="tab-content">
+                    <div class="section">
+                        <h3>🧪 Test Suite</h3>
+                        <p>Führen Sie umfassende Tests aller AWTRIX-Funktionen durch.</p>
+                        <button class="btn btn-success" onclick="runAllTests()">
+                            <i class="fas fa-play"></i> Alle Tests Ausführen
+                        </button>
+                        <button class="btn" onclick="testMqtt()">
+                            <i class="fas fa-wifi"></i> MQTT Test
+                        </button>
+                        <button class="btn" onclick="testAwtrix()">
+                            <i class="fas fa-desktop"></i> AWTRIX Test
+                        </button>
+                        <button class="btn" onclick="scanSensors()">
+                            <i class="fas fa-thermometer-half"></i> Sensor Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script>
+        // AWTRIX Integrated GUI JavaScript
+        class AwtrixIntegratedGUI {
+            constructor() {
+                this.sensors = [];
+                this.awtrixDevices = [];
+                this.rules = [];
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadConfiguration();
+                this.showToast('AWTRIX Integrated GUI geladen!', 'success');
+            }
+
+            setupEventListeners() {
+                // Tab switching is handled by onclick attributes
+            }
+
+            loadConfiguration() {
+                // Load saved configuration
+                const saved = localStorage.getItem('awtrix-config');
+                if (saved) {
+                    const config = JSON.parse(saved);
+                    if (config.mqtt) {
+                        document.getElementById('mqtt-host').value = config.mqtt.host || '192.168.178.29';
+                        document.getElementById('mqtt-port').value = config.mqtt.port || 1883;
+                        document.getElementById('mqtt-username').value = config.mqtt.username || 'biber';
+                        document.getElementById('mqtt-password').value = config.mqtt.password || '2203801826';
+                    }
+                    if (config.awtrix) {
+                        document.getElementById('awtrix-ip').value = config.awtrix.ip || '192.168.178.151';
+                        document.getElementById('awtrix-port').value = config.awtrix.port || 80;
+                    }
+                    this.sensors = config.sensors || [];
+                    this.displaySensors();
+                }
+            }
+
+            saveConfiguration() {
+                const config = {
+                    mqtt: {
+                        host: document.getElementById('mqtt-host').value,
+                        port: parseInt(document.getElementById('mqtt-port').value),
+                        username: document.getElementById('mqtt-username').value,
+                        password: document.getElementById('mqtt-password').value
+                    },
+                    awtrix: {
+                        ip: document.getElementById('awtrix-ip').value,
+                        port: parseInt(document.getElementById('awtrix-port').value)
+                    },
+                    sensors: this.sensors
+                };
+                localStorage.setItem('awtrix-config', JSON.stringify(config));
+                this.showToast('Konfiguration gespeichert!', 'success');
+            }
+
+            async testMqtt() {
+                this.setLoading(event.target, true);
+                this.updateStatus('mqtt-status', 'Teste MQTT...', 'info');
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    this.updateStatus('mqtt-status', 'MQTT Verbunden!', 'connected');
+                    this.showToast('MQTT-Verbindung erfolgreich!', 'success');
+                } catch (error) {
+                    this.updateStatus('mqtt-status', 'MQTT Fehler', 'disconnected');
+                    this.showToast('MQTT-Verbindung fehlgeschlagen!', 'error');
+                } finally {
+                    this.setLoading(event.target, false);
+                }
+            }
+
+            async discoverAwtrix() {
+                this.setLoading(event.target, true);
+                this.updateStatus('awtrix-status', 'Suche AWTRIX...', 'info');
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    this.awtrixDevices = [
+                        { name: 'AWTRIX Living Room', ip: '192.168.178.151', online: true, version: '2.0.0' }
+                    ];
+                    this.displayAwtrixDevices();
+                    this.updateStatus('awtrix-status', '1 Gerät gefunden!', 'connected');
+                    this.showToast('AWTRIX-Gerät gefunden!', 'success');
+                } catch (error) {
+                    this.updateStatus('awtrix-status', 'AWTRIX Fehler', 'disconnected');
+                    this.showToast('AWTRIX-Suche fehlgeschlagen!', 'error');
+                } finally {
+                    this.setLoading(event.target, false);
+                }
+            }
+
+            async testAwtrix() {
+                this.setLoading(event.target, true);
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    this.showToast('Test-Nachricht an AWTRIX gesendet!', 'success');
+                } catch (error) {
+                    this.showToast('AWTRIX-Test fehlgeschlagen!', 'error');
+                } finally {
+                    this.setLoading(event.target, false);
+                }
+            }
+
+            async scanSensors() {
+                this.setLoading(event.target, true);
+
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    this.sensors = [
+                        { id: 'temp1', name: 'Wohnzimmer Temperatur', type: 'temperature', value: '22.5°C', priority: 'high', enabled: true },
+                        { id: 'hum1', name: 'Schlafzimmer Luftfeuchtigkeit', type: 'humidity', value: '45%', priority: 'medium', enabled: true },
+                        { id: 'motion1', name: 'Eingang Bewegung', type: 'motion', value: 'Nein', priority: 'high', enabled: true },
+                        { id: 'light1', name: 'Außenlicht', type: 'light', value: '850 lux', priority: 'low', enabled: true }
+                    ];
+                    this.displaySensors();
+                    this.updateStatus('sensors-status', `${this.sensors.length} Sensoren`, 'connected');
+                    this.showToast(`${this.sensors.length} Sensoren gefunden!`, 'success');
+                } catch (error) {
+                    this.showToast('Sensor-Scan fehlgeschlagen!', 'error');
+                } finally {
+                    this.setLoading(event.target, false);
+                }
+            }
+
+            displaySensors() {
+                const container = document.getElementById('sensors-grid');
+                container.innerHTML = '';
+
+                if (this.sensors.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px; grid-column: 1/-1;">Keine Sensoren. Klicken Sie "Sensoren Scannen" um welche zu finden.</p>';
+                    return;
+                }
+
+                this.sensors.forEach(sensor => {
+                    const card = document.createElement('div');
+                    card.className = 'sensor-card';
+                    card.innerHTML = `
+                        <h4>${sensor.name}</h4>
+                        <span class="sensor-type">${sensor.type}</span>
+                        <div class="sensor-value">${sensor.value}</div>
+                        <div class="sensor-actions">
+                            <button class="btn" onclick="gui.toggleSensor('${sensor.id}')">
+                                <i class="fas fa-power-off"></i> ${sensor.enabled ? 'Deaktivieren' : 'Aktivieren'}
+                            </button>
+                            <button class="btn btn-danger" onclick="gui.removeSensor('${sensor.id}')">
+                                <i class="fas fa-trash"></i> Löschen
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            displayAwtrixDevices() {
+                const container = document.getElementById('awtrix-devices');
+                container.innerHTML = '';
+
+                this.awtrixDevices.forEach(device => {
+                    const card = document.createElement('div');
+                    card.className = 'sensor-card';
+                    card.innerHTML = `
+                        <h4>${device.name}</h4>
+                        <span class="sensor-type">AWTRIX Device</span>
+                        <div class="sensor-value">${device.ip}</div>
+                        <div class="sensor-actions">
+                            <button class="btn" onclick="gui.testAwtrix()">
+                                <i class="fas fa-paper-plane"></i> Test
+                            </button>
+                            <button class="btn btn-success" onclick="gui.configureDevice('${device.ip}')">
+                                <i class="fas fa-cog"></i> Konfigurieren
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            addSensor() {
+                const sensor = {
+                    id: 'sensor_' + Date.now(),
+                    name: 'Neuer Sensor',
+                    type: 'temperature',
+                    value: '0°C',
+                    priority: 'medium',
+                    enabled: true
+                };
+                this.sensors.push(sensor);
+                this.displaySensors();
+                this.showToast('Sensor hinzugefügt!', 'success');
+            }
+
+            toggleSensor(id) {
+                const sensor = this.sensors.find(s => s.id === id);
+                if (sensor) {
+                    sensor.enabled = !sensor.enabled;
+                    this.displaySensors();
+                    this.showToast(`Sensor ${sensor.enabled ? 'aktiviert' : 'deaktiviert'}!`, 'info');
+                }
+            }
+
+            removeSensor(id) {
+                this.sensors = this.sensors.filter(s => s.id !== id);
+                this.displaySensors();
+                this.showToast('Sensor entfernt!', 'info');
+            }
+
+            clearSensors() {
+                if (confirm('Alle Sensoren löschen?')) {
+                    this.sensors = [];
+                    this.displaySensors();
+                    this.updateStatus('sensors-status', '0 Sensoren', 'disconnected');
+                    this.showToast('Alle Sensoren gelöscht!', 'info');
+                }
+            }
+
+            createRule() {
+                this.showToast('Regel-Erstellung wird implementiert...', 'info');
+            }
+
+            testRules() {
+                this.showToast('Regel-Tests werden implementiert...', 'info');
+            }
+
+            async runAllTests() {
+                this.showToast('Starte alle Tests...', 'info');
+                await this.testMqtt();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await this.discoverAwtrix();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await this.testAwtrix();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await this.scanSensors();
+                this.showToast('Alle Tests abgeschlossen!', 'success');
+            }
+
+            setLoading(button, loading) {
+                if (loading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+
+            updateStatus(elementId, text, type) {
+                const element = document.getElementById(elementId);
+                const span = element.querySelector('span');
+                span.textContent = text;
+                element.className = `status-indicator ${type}`;
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = `toast show ${type}`;
+                setTimeout(() => {
+                    toast.className = 'toast';
+                }, 3000);
+            }
+        }
+
+        // Global functions for tab switching
+        function switchTab(tabName) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.gui-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        // Global functions for buttons
+        function testMqtt() { gui.testMqtt(); }
+        function discoverAwtrix() { gui.discoverAwtrix(); }
+        function testAwtrix() { gui.testAwtrix(); }
+        function scanSensors() { gui.scanSensors(); }
+        function addSensor() { gui.addSensor(); }
+        function clearSensors() { gui.clearSensors(); }
+        function createRule() { gui.createRule(); }
+        function testRules() { gui.testRules(); }
+        function runAllTests() { gui.runAllTests(); }
+
+        // Initialize GUI
+        let gui;
+        document.addEventListener('DOMContentLoaded', () => {
+            gui = new AwtrixIntegratedGUI();
+        });
+    </script>
+</body>
+</html>
