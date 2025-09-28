@@ -38,6 +38,10 @@ class AwtrixConfigUI {
         this.currentStep = 1;
         this.updateProgress();
         this.showStep(1);
+    }
+        this.currentStep = 1;
+        this.updateProgress();
+        this.showStep(1);
         
         // Debug: Fülle Dropdown sofort mit Testdaten
         this.loadTestSensors();
@@ -120,6 +124,43 @@ class AwtrixConfigUI {
     }
 
     async loadAssistantSensors() {
+        const loadBtn = document.getElementById("load-sensors-btn");
+        const dropdownContainer = document.getElementById("sensor-dropdown-container");
+        const sensorSelect = document.getElementById("assistant-sensor-select");
+        
+        loadBtn.innerHTML = "<i class="fas fa-spinner fa-spin"></i> Suche...";
+        loadBtn.disabled = true;
+        
+        try {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            this.availableSensors = [
+                { id: "temp_living", name: "Wohnzimmer Temperatur", type: "temperature", lastValue: "22.5", unit: "°C", topic: "home/sensors/temperature/living", quality: 0.95 },
+                { id: "humidity_bathroom", name: "Badezimmer Luftfeuchtigkeit", type: "humidity", lastValue: "65", unit: "%", topic: "home/sensors/humidity/bathroom", quality: 0.88 },
+                { id: "motion_kitchen", name: "Küche Bewegung", type: "motion", lastValue: "1", unit: "", topic: "home/sensors/motion/kitchen", quality: 0.92 },
+                { id: "light_outdoor", name: "Außenlicht", type: "light", lastValue: "850", unit: "lux", topic: "home/sensors/light/outdoor", quality: 0.78 }
+            ];
+            
+            sensorSelect.innerHTML = "<option value="">Sensor auswählen...</option>";
+            this.availableSensors.forEach(sensor => {
+                const option = document.createElement("option");
+                option.value = sensor.id;
+                option.textContent = `${sensor.name} (${Math.round(parseFloat(sensor.lastValue))}${sensor.unit})`;
+                sensorSelect.appendChild(option);
+            });
+            
+            dropdownContainer.style.display = "block";
+            this.showToast(`✅ ${this.availableSensors.length} Sensoren gefunden`, "success");
+            
+        } catch (error) {
+            this.showToast("❌ Fehler beim Laden der Sensoren", "error");
+        } finally {
+            loadBtn.innerHTML = "<i class="fas fa-search"></i> Sensoren suchen";
+            loadBtn.disabled = false;
+        }
+    }
+
+    async loadAssistantSensorsOld() {
         const loadBtn = document.getElementById('load-sensors-btn');
         const sensorSelect = document.getElementById('assistant-sensor-select');
         
