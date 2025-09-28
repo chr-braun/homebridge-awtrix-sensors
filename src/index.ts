@@ -20,5 +20,13 @@ const PLATFORM_NAME = 'AwtrixSensors';
  * This function is called by Homebridge when the plugin is loaded
  */
 export = (api: API): void => {
+  // Register the platform
   api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, AwtrixSensorsPlatform);
+  
+  // Register Config UI X integration
+  api.on('didFinishLaunching', () => {
+    // Note: Config UI X integration would be implemented here
+    // For now, we'll just log that the plugin is ready
+    console.log('AWTRIX Sensors plugin loaded and ready');
+  });
 };

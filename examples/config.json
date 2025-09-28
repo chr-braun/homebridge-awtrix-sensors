@@ -1,76 +1,159 @@
 {
   "bridge": {
-    "name": "Homebridge",
+    "name": "AWTRIX HomeKit Bridge",
     "username": "CC:22:3D:E3:CE:30",
     "port": 51826,
     "pin": "031-45-154"
   },
+  "accessories": [],
   "platforms": [
     {
       "platform": "AwtrixSensors",
-      "name": "AWTRIX MQTT Platform",
+      "name": "AWTRIX Sensors",
       "mqtt": {
-        "host": "192.168.1.100",
+        "host": "192.168.178.29",
         "port": 1883,
-        "username": "your_mqtt_username",
-        "password": "your_mqtt_password",
+        "username": "biber",
+        "password": "2203801826",
         "topicPrefix": "awtrix_0b86f0"
       },
       "awtrix": {
-        "ip": "192.168.1.151",
+        "ip": "192.168.178.151",
         "port": 80,
-        "mqtt_topic": "awtrix_0b86f0/notify"
+        "mqtt_topic": "awtrix_0b86f0"
       },
-      "sensors": {
-        "living_room_temperature": {
-          "name": "Wohnzimmer",
-          "type": "temperature",
-          "unit": "°C",
-          "slot": 0,
-          "color": "#FF6B35",
-          "icon": 2422,
-          "effect": "scroll",
-          "duration": 15
+      "sensorDisplay": {
+        "mode": "rotation",
+        "rotationInterval": 10,
+        "priorityThreshold": "medium",
+        "sensors": [
+          {
+            "id": "temperature_1",
+            "name": "Temperatur Wohnzimmer",
+            "type": "temperature",
+            "unit": "°C",
+            "enabled": true,
+            "slot": 0,
+            "color": "#FF6B6B",
+            "duration": 10,
+            "priority": "high",
+            "mqtt_topic": "sensors/temperature/living_room"
+          },
+          {
+            "id": "humidity_1",
+            "name": "Luftfeuchtigkeit Wohnzimmer",
+            "type": "humidity",
+            "unit": "%",
+            "enabled": true,
+            "slot": 1,
+            "color": "#4ECDC4",
+            "duration": 8,
+            "priority": "medium",
+            "mqtt_topic": "sensors/humidity/living_room"
+          },
+          {
+            "id": "motion_1",
+            "name": "Bewegung Eingang",
+            "type": "motion",
+            "unit": "",
+            "enabled": true,
+            "slot": 2,
+            "color": "#45B7D1",
+            "duration": 5,
+            "priority": "high",
+            "mqtt_topic": "sensors/motion/entrance"
+          },
+          {
+            "id": "light_1",
+            "name": "Helligkeit Außen",
+            "type": "light",
+            "unit": "lux",
+            "enabled": true,
+            "slot": 3,
+            "color": "#FFA07A",
+            "duration": 12,
+            "priority": "low",
+            "mqtt_topic": "sensors/light/outdoor"
+          },
+          {
+            "id": "pressure_1",
+            "name": "Luftdruck",
+            "type": "pressure",
+            "unit": "hPa",
+            "enabled": true,
+            "slot": 4,
+            "color": "#98D8C8",
+            "duration": 15,
+            "priority": "low",
+            "mqtt_topic": "sensors/pressure/weather"
+          }
+        ]
+      },
+      "displaySettings": {
+        "brightness": 80,
+        "autoBrightness": true,
+        "nightMode": {
+          "enabled": true,
+          "startTime": "22:00",
+          "endTime": "07:00",
+          "brightness": 30
         },
-        "bedroom_humidity": {
-          "name": "Schlafzimmer",
-          "type": "humidity",
-          "unit": "%",
-          "slot": 1,
-          "color": "#00A3FF",
-          "icon": 51658,
-          "effect": "fade",
-          "duration": 10
-        },
-        "front_door_motion": {
-          "name": "Eingang",
-          "type": "motion",
-          "slot": 2,
-          "color": "#00FF00",
-          "icon": 2313,
-          "effect": "blink",
-          "duration": 5
-        },
-        "kitchen_light": {
-          "name": "Küche",
-          "type": "light",
-          "unit": "lux",
-          "slot": 3,
-          "color": "#FFD700",
-          "icon": 2400,
-          "effect": "scroll",
-          "duration": 8
-        },
-        "weather_pressure": {
-          "name": "Luftdruck",
-          "type": "pressure",
-          "unit": "hPa",
-          "slot": 4,
-          "color": "#9370DB",
-          "icon": 2422,
-          "effect": "fade",
-          "duration": 12
+        "effects": {
+          "scrollSpeed": "medium",
+          "fadeSpeed": "slow",
+          "rainbowSpeed": "fast"
         }
+      },
+      "notifications": {
+        "enabled": true,
+        "sound": true,
+        "vibration": false,
+        "priority": {
+          "high": {
+            "duration": 30,
+            "color": "#FF0000",
+            "effect": "blink"
+          },
+          "medium": {
+            "duration": 15,
+            "color": "#FFA500",
+            "effect": "fade"
+          },
+          "low": {
+            "duration": 10,
+            "color": "#00FF00",
+            "effect": "scroll"
+          }
+        }
+      },
+      "automation": {
+        "enabled": true,
+        "rules": [
+          {
+            "name": "Temperatur-Warnung",
+            "condition": "temperature > 25",
+            "action": "notification",
+            "message": "Temperatur zu hoch: {value}°C",
+            "priority": "high",
+            "enabled": true
+          },
+          {
+            "name": "Bewegung erkannt",
+            "condition": "motion == true",
+            "action": "display",
+            "message": "Bewegung erkannt!",
+            "priority": "high",
+            "enabled": true
+          },
+          {
+            "name": "Niedrige Luftfeuchtigkeit",
+            "condition": "humidity < 30",
+            "action": "notification",
+            "message": "Luftfeuchtigkeit zu niedrig: {value}%",
+            "priority": "medium",
+            "enabled": true
+          }
+        ]
       }
     }
   ]

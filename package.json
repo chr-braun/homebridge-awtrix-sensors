@@ -1,6 +1,6 @@
 {
   "name": "homebridge-awtrix-sensors",
-  "version": "1.0.2-beta",
+  "version": "1.0.5",
   "description": "Homebridge plugin for AWTRIX LED matrix displays with MQTT sensor integration",
   "main": "lib/index.js",
   "scripts": {
@@ -55,6 +55,7 @@
   },
   "files": [
     "lib/",
+    "ui/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
@@ -67,6 +68,59 @@
     "category": "other",
     "platforms": [
       "AwtrixSensors"
-    ]
+    ],
+    "configSchema": {
+      "type": "object",
+      "properties": {
+        "mqtt": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "title": "MQTT Host",
+              "type": "string",
+              "default": "192.168.178.29"
+            },
+            "port": {
+              "title": "MQTT Port",
+              "type": "number",
+              "default": 1883
+            },
+            "username": {
+              "title": "MQTT Username",
+              "type": "string",
+              "default": "biber"
+            },
+            "password": {
+              "title": "MQTT Password",
+              "type": "string",
+              "default": "2203801826"
+            },
+            "topicPrefix": {
+              "title": "MQTT Topic Prefix",
+              "type": "string",
+              "default": "awtrix_0b86f0"
+            }
+          },
+          "required": ["host", "port", "username", "password", "topicPrefix"]
+        },
+        "awtrix": {
+          "type": "object",
+          "properties": {
+            "ip": {
+              "title": "AWTRIX IP Address",
+              "type": "string",
+              "default": "192.168.178.151"
+            },
+            "port": {
+              "title": "AWTRIX Port",
+              "type": "number",
+              "default": 80
+            }
+          },
+          "required": ["ip", "port"]
+        }
+      },
+      "required": ["mqtt", "awtrix"]
+    }
   }
 }

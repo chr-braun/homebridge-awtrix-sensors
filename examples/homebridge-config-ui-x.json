@@ -1,0 +1,31 @@
+{
+  "bridge": {
+    "name": "AWTRIX HomeKit Bridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+  "accessories": [],
+  "platforms": [
+    {
+      "platform": "AwtrixSensors",
+      "name": "AWTRIX Sensors",
+      "mqtt": {
+        "host": "192.168.178.29",
+        "port": 1883,
+        "username": "biber",
+        "password": "2203801826",
+        "topicPrefix": "awtrix_0b86f0"
+      },
+      "awtrix": {
+        "ip": "192.168.178.151",
+        "port": 80
+      },
+      "sensorDisplay": {
+        "mode": "rotation",
+        "rotationInterval": 10,
+        "priorityThreshold": "medium"
+      }
+    }
+  ]
+}

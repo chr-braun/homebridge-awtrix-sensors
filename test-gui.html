@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWTRIX Sensors - Test GUI</title>
+    <link rel="stylesheet" href="ui/dist/config-ui.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="config-container">
+        <!-- Header -->
+        <div class="config-header">
+            <h1><i class="fas fa-matrix"></i> AWTRIX Sensors - Test GUI</h1>
+            <p>Test the GUI functionality without Homebridge Config UI X</p>
+        </div>
+
+        <!-- Configuration Form -->
+        <form id="config-form" class="config-form">
+            <!-- MQTT Configuration -->
+            <div class="config-section">
+                <h2><i class="fas fa-wifi"></i> MQTT Server Configuration</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="mqtt-host">Host Address</label>
+                        <input type="text" id="mqtt-host" name="mqtt.host" placeholder="192.168.178.29" value="192.168.178.29" required>
+                        <small>IP address of your MQTT broker</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="mqtt-port">Port</label>
+                        <input type="number" id="mqtt-port" name="mqtt.port" placeholder="1883" value="1883" min="1" max="65535" required>
+                        <small>MQTT broker port (usually 1883)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="mqtt-username">Username</label>
+                        <input type="text" id="mqtt-username" name="mqtt.username" placeholder="biber" value="biber" required>
+                        <small>MQTT broker username</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="mqtt-password">Password</label>
+                        <input type="password" id="mqtt-password" name="mqtt.password" placeholder="2203801826" value="2203801826" required>
+                        <small>MQTT broker password</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="mqtt-topic">Topic Prefix</label>
+                        <input type="text" id="mqtt-topic" name="mqtt.topicPrefix" placeholder="awtrix_0b86f0" value="awtrix_0b86f0" required>
+                        <small>MQTT topic prefix for AWTRIX messages</small>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="test-mqtt-btn" class="btn btn-test">
+                        <i class="fas fa-wifi"></i> Test MQTT Connection
+                    </button>
+                    <div class="status-indicator" id="mqtt-status">
+                        <i class="fas fa-circle"></i>
+                        <span>Not tested</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AWTRIX Configuration -->
+            <div class="config-section">
+                <h2><i class="fas fa-desktop"></i> AWTRIX Device Configuration</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="awtrix-ip">AWTRIX IP Address</label>
+                        <input type="text" id="awtrix-ip" name="awtrix.ip" placeholder="192.168.178.151" value="192.168.178.151" required>
+                        <small>IP address of your AWTRIX device</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="awtrix-port">AWTRIX Port</label>
+                        <input type="number" id="awtrix-port" name="awtrix.port" placeholder="80" value="80" min="1" max="65535" required>
+                        <small>HTTP port of your AWTRIX device (usually 80)</small>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="discover-awtrix-btn" class="btn btn-test">
+                        <i class="fas fa-search"></i> Discover AWTRIX Devices
+                    </button>
+                    <button type="button" id="test-awtrix-btn" class="btn btn-test">
+                        <i class="fas fa-paper-plane"></i> Send Test Message
+                    </button>
+                    <div class="status-indicator" id="awtrix-status">
+                        <i class="fas fa-circle"></i>
+                        <span>Not tested</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sensor Management -->
+            <div class="config-section">
+                <h2><i class="fas fa-thermometer-half"></i> Sensor Management</h2>
+                
+                <!-- Sensor Search & Selection -->
+                <div class="sensor-search-section">
+                    <h3><i class="fas fa-search"></i> Find & Select Sensors</h3>
+                    <div class="search-controls">
+                        <div class="search-input-group">
+                            <input type="text" id="sensor-search-input" placeholder="Search for sensors by name, type, or topic..." class="search-input">
+                            <button type="button" id="search-sensors-btn" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                        <div class="search-filters">
+                            <select id="sensor-type-filter" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="temperature">Temperature</option>
+                                <option value="humidity">Humidity</option>
+                                <option value="motion">Motion</option>
+                                <option value="light">Light</option>
+                                <option value="pressure">Pressure</option>
+                                <option value="battery">Battery</option>
+                                <option value="wifi">WiFi</option>
+                            </select>
+                            <select id="sensor-priority-filter" class="filter-select">
+                                <option value="">All Priorities</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Available Sensors Dropdown -->
+                    <div class="available-sensors-section">
+                        <h4>Available Sensors</h4>
+                        <div class="sensors-dropdown-container">
+                            <select id="available-sensors-dropdown" class="sensors-dropdown" multiple>
+                                <!-- Available sensors will be populated here -->
+                            </select>
+                            <div class="dropdown-actions">
+                                <button type="button" id="add-selected-sensors-btn" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Add Selected
+                                </button>
+                                <button type="button" id="refresh-sensors-btn" class="btn btn-secondary">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sensor Controls -->
+                <div class="sensor-controls">
+                    <button type="button" id="scan-sensors-btn" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Scan MQTT Sensors
+                    </button>
+                    <button type="button" id="add-sensor-btn" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Custom Sensor
+                    </button>
+                </div>
+                
+                <div class="sensors-list" id="sensors-list">
+                    <!-- Sensors will be populated here -->
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions-main">
+                <button type="button" id="reset-btn" class="btn btn-secondary">
+                    <i class="fas fa-undo"></i> Reset to Defaults
+                </button>
+                <button type="button" id="save-btn" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+                <button type="button" id="test-all-btn" class="btn btn-success">
+                    <i class="fas fa-play"></i> Test All Connections
+                </button>
+            </div>
+        </form>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container" id="toast-container"></div>
+    </div>
+
+    <script>
+        // Mock API for testing
+        const mockAPI = {
+            async getConfig() {
+                return {
+                    mqtt: {
+                        host: '192.168.178.29',
+                        port: 1883,
+                        username: 'biber',
+                        password: '2203801826',
+                        topicPrefix: 'awtrix_0b86f0'
+                    },
+                    awtrix: {
+                        ip: '192.168.178.151',
+                        port: 80
+                    },
+                    sensorDisplay: {
+                        mode: 'rotation',
+                        rotationInterval: 10,
+                        priorityThreshold: 'medium',
+                        sensors: []
+                    }
+                };
+            },
+
+            async testMqtt(config) {
+                // Simulate MQTT test
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return { success: true, message: 'MQTT connection successful!' };
+            },
+
+            async discoverDevices() {
+                // Simulate device discovery
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                return {
+                    success: true,
+                    devices: [
+                        {
+                            id: 'awtrix_001',
+                            name: 'AWTRIX Living Room',
+                            ip: '192.168.178.151',
+                            port: 80,
+                            online: true,
+                            version: '2.0.0'
+                        }
+                    ]
+                };
+            },
+
+            async testMessage() {
+                // Simulate test message
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return { success: true, message: 'Test message sent successfully!' };
+            },
+
+            async scanSensors() {
+                // Simulate sensor scanning
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return {
+                    success: true,
+                    sensors: [
+                        {
+                            id: 'temp_living_room',
+                            name: 'Living Room Temperature',
+                            type: 'temperature',
+                            unit: '°C',
+                            priority: 'high',
+                            mqtt_topic: 'sensors/temperature/living_room',
+                            value: '22.5',
+                            enabled: true,
+                            slot: 0,
+                            color: '#FF6B6B',
+                            duration: 10
+                        },
+                        {
+                            id: 'humidity_bedroom',
+                            name: 'Bedroom Humidity',
+                            type: 'humidity',
+                            unit: '%',
+                            priority: 'medium',
+                            mqtt_topic: 'sensors/humidity/bedroom',
+                            value: '45',
+                            enabled: true,
+                            slot: 1,
+                            color: '#4ECDC4',
+                            duration: 8
+                        },
+                        {
+                            id: 'motion_entrance',
+                            name: 'Entrance Motion',
+                            type: 'motion',
+                            unit: '',
+                            priority: 'high',
+                            mqtt_topic: 'sensors/motion/entrance',
+                            value: 'false',
+                            enabled: true,
+                            slot: 2,
+                            color: '#45B7D1',
+                            duration: 5
+                        }
+                    ]
+                };
+            },
+
+            async searchSensors(params) {
+                // Simulate sensor search
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const allSensors = [
+                    {
+                        id: 'temp_living_room',
+                        name: 'Living Room Temperature',
+                        type: 'temperature',
+                        unit: '°C',
+                        priority: 'high',
+                        mqtt_topic: 'sensors/temperature/living_room',
+                        value: '22.5',
+                        enabled: false
+                    },
+                    {
+                        id: 'humidity_bedroom',
+                        name: 'Bedroom Humidity',
+                        type: 'humidity',
+                        unit: '%',
+                        priority: 'medium',
+                        mqtt_topic: 'sensors/humidity/bedroom',
+                        value: '45',
+                        enabled: false
+                    },
+                    {
+                        id: 'motion_entrance',
+                        name: 'Entrance Motion',
+                        type: 'motion',
+                        unit: '',
+                        priority: 'high',
+                        mqtt_topic: 'sensors/motion/entrance',
+                        value: 'false',
+                        enabled: false
+                    },
+                    {
+                        id: 'light_outdoor',
+                        name: 'Outdoor Light',
+                        type: 'light',
+                        unit: 'lux',
+                        priority: 'low',
+                        mqtt_topic: 'sensors/light/outdoor',
+                        value: '850',
+                        enabled: false
+                    },
+                    {
+                        id: 'pressure_weather',
+                        name: 'Weather Pressure',
+                        type: 'pressure',
+                        unit: 'hPa',
+                        priority: 'low',
+                        mqtt_topic: 'sensors/pressure/weather',
+                        value: '1013.25',
+                        enabled: false
+                    },
+                    {
+                        id: 'wifi_signal',
+                        name: 'WiFi Signal Strength',
+                        type: 'wifi',
+                        unit: 'dBm',
+                        priority: 'medium',
+                        mqtt_topic: 'sensors/wifi/signal',
+                        value: '-45',
+                        enabled: false
+                    }
+                ];
+
+                let filteredSensors = allSensors;
+
+                if (params.searchTerm) {
+                    filteredSensors = filteredSensors.filter(sensor => 
+                        sensor.name.toLowerCase().includes(params.searchTerm.toLowerCase()) ||
+                        sensor.type.toLowerCase().includes(params.searchTerm.toLowerCase()) ||
+                        sensor.mqtt_topic.toLowerCase().includes(params.searchTerm.toLowerCase())
+                    );
+                }
+
+                if (params.type) {
+                    filteredSensors = filteredSensors.filter(sensor => sensor.type === params.type);
+                }
+
+                if (params.priority) {
+                    filteredSensors = filteredSensors.filter(sensor => sensor.priority === params.priority);
+                }
+
+                return { success: true, sensors: filteredSensors };
+            }
+        };
+
+        // Test GUI Class
+        class TestAwtrixGUI {
+            constructor() {
+                this.sensors = [];
+                this.availableSensors = [];
+                this.initializeEventListeners();
+                this.loadConfiguration();
+            }
+
+            initializeEventListeners() {
+                // MQTT Test
+                document.getElementById('test-mqtt-btn').addEventListener('click', () => this.testMqttConnection());
+                
+                // AWTRIX Tests
+                document.getElementById('discover-awtrix-btn').addEventListener('click', () => this.discoverAwtrixDevices());
+                document.getElementById('test-awtrix-btn').addEventListener('click', () => this.testAwtrixConnection());
+                
+                // Sensor Management
+                document.getElementById('scan-sensors-btn').addEventListener('click', () => this.scanSensors());
+                document.getElementById('search-sensors-btn').addEventListener('click', () => this.searchSensors());
+                document.getElementById('add-selected-sensors-btn').addEventListener('click', () => this.addSelectedSensors());
+                document.getElementById('refresh-sensors-btn').addEventListener('click', () => this.refreshAvailableSensors());
+                document.getElementById('add-sensor-btn').addEventListener('click', () => this.addCustomSensor());
+                
+                // Form Actions
+                document.getElementById('save-btn').addEventListener('click', () => this.saveConfiguration());
+                document.getElementById('reset-btn').addEventListener('click', () => this.resetToDefaults());
+                document.getElementById('test-all-btn').addEventListener('click', () => this.testAllConnections());
+                
+                // Search input
+                document.getElementById('sensor-search-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.searchSensors();
+                });
+                
+                // Filters
+                document.getElementById('sensor-type-filter').addEventListener('change', () => this.filterAvailableSensors());
+                document.getElementById('sensor-priority-filter').addEventListener('change', () => this.filterAvailableSensors());
+            }
+
+            async loadConfiguration() {
+                try {
+                    const config = await mockAPI.getConfig();
+                    this.populateForm(config);
+                    this.showToast('Configuration loaded successfully', 'success');
+                } catch (error) {
+                    this.showToast('Failed to load configuration', 'error');
+                }
+            }
+
+            populateForm(config) {
+                if (config.mqtt) {
+                    document.getElementById('mqtt-host').value = config.mqtt.host || '';
+                    document.getElementById('mqtt-port').value = config.mqtt.port || 1883;
+                    document.getElementById('mqtt-username').value = config.mqtt.username || '';
+                    document.getElementById('mqtt-password').value = config.mqtt.password || '';
+                    document.getElementById('mqtt-topic').value = config.mqtt.topicPrefix || '';
+                }
+                if (config.awtrix) {
+                    document.getElementById('awtrix-ip').value = config.awtrix.ip || '';
+                    document.getElementById('awtrix-port').value = config.awtrix.port || 80;
+                }
+            }
+
+            async testMqttConnection() {
+                this.setLoading('test-mqtt-btn', true);
+                this.updateStatus('mqtt-status', 'Testing...', 'info');
+
+                try {
+                    const config = {
+                        host: document.getElementById('mqtt-host').value,
+                        port: parseInt(document.getElementById('mqtt-port').value),
+                        username: document.getElementById('mqtt-username').value,
+                        password: document.getElementById('mqtt-password').value
+                    };
+
+                    const result = await mockAPI.testMqtt(config);
+                    if (result.success) {
+                        this.updateStatus('mqtt-status', 'Connected', 'success');
+                        this.showToast('MQTT connection successful!', 'success');
+                    } else {
+                        this.updateStatus('mqtt-status', 'Failed', 'error');
+                        this.showToast('MQTT connection failed', 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus('mqtt-status', 'Error', 'error');
+                    this.showToast('MQTT connection test failed', 'error');
+                } finally {
+                    this.setLoading('test-mqtt-btn', false);
+                }
+            }
+
+            async discoverAwtrixDevices() {
+                this.setLoading('discover-awtrix-btn', true);
+
+                try {
+                    const result = await mockAPI.discoverDevices();
+                    if (result.success) {
+                        this.updateStatus('awtrix-status', `${result.devices.length} devices found`, 'success');
+                        this.showToast(`Found ${result.devices.length} AWTRIX devices!`, 'success');
+                    } else {
+                        this.updateStatus('awtrix-status', 'Discovery failed', 'error');
+                        this.showToast('Failed to discover AWTRIX devices', 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus('awtrix-status', 'Error', 'error');
+                    this.showToast('AWTRIX discovery failed', 'error');
+                } finally {
+                    this.setLoading('discover-awtrix-btn', false);
+                }
+            }
+
+            async testAwtrixConnection() {
+                this.setLoading('test-awtrix-btn', true);
+
+                try {
+                    const result = await mockAPI.testMessage();
+                    if (result.success) {
+                        this.updateStatus('awtrix-status', 'Test successful', 'success');
+                        this.showToast('Test message sent to AWTRIX!', 'success');
+                    } else {
+                        this.updateStatus('awtrix-status', 'Test failed', 'error');
+                        this.showToast('Failed to send test message', 'error');
+                    }
+                } catch (error) {
+                    this.updateStatus('awtrix-status', 'Error', 'error');
+                    this.showToast('AWTRIX test failed', 'error');
+                } finally {
+                    this.setLoading('test-awtrix-btn', false);
+                }
+            }
+
+            async scanSensors() {
+                this.setLoading('scan-sensors-btn', true);
+
+                try {
+                    const result = await mockAPI.scanSensors();
+                    if (result.success) {
+                        this.sensors = result.sensors || [];
+                        this.displaySensors();
+                        this.showToast(`Found ${this.sensors.length} sensors!`, 'success');
+                    } else {
+                        this.showToast('Failed to scan sensors', 'error');
+                    }
+                } catch (error) {
+                    this.showToast('Sensor scanning failed', 'error');
+                } finally {
+                    this.setLoading('scan-sensors-btn', false);
+                }
+            }
+
+            async searchSensors() {
+                const searchTerm = document.getElementById('sensor-search-input').value;
+                const typeFilter = document.getElementById('sensor-type-filter').value;
+                const priorityFilter = document.getElementById('sensor-priority-filter').value;
+
+                this.setLoading('search-sensors-btn', true);
+
+                try {
+                    const result = await mockAPI.searchSensors({
+                        searchTerm,
+                        type: typeFilter,
+                        priority: priorityFilter
+                    });
+
+                    if (result.success) {
+                        this.availableSensors = result.sensors || [];
+                        this.populateAvailableSensorsDropdown();
+                        this.showToast(`Found ${this.availableSensors.length} sensors`, 'success');
+                    } else {
+                        this.showToast('Failed to search sensors', 'error');
+                    }
+                } catch (error) {
+                    this.showToast('Sensor search failed', 'error');
+                } finally {
+                    this.setLoading('search-sensors-btn', false);
+                }
+            }
+
+            filterAvailableSensors() {
+                const typeFilter = document.getElementById('sensor-type-filter').value;
+                const priorityFilter = document.getElementById('sensor-priority-filter').value;
+                
+                const filteredSensors = this.availableSensors.filter(sensor => {
+                    const matchesType = !typeFilter || sensor.type === typeFilter;
+                    const matchesPriority = !priorityFilter || sensor.priority === priorityFilter;
+                    return matchesType && matchesPriority;
+                });
+
+                this.populateAvailableSensorsDropdown(filteredSensors);
+            }
+
+            populateAvailableSensorsDropdown(sensors = this.availableSensors) {
+                const dropdown = document.getElementById('available-sensors-dropdown');
+                dropdown.innerHTML = '';
+
+                if (sensors.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No sensors found';
+                    option.disabled = true;
+                    dropdown.appendChild(option);
+                    return;
+                }
+
+                sensors.forEach(sensor => {
+                    const option = document.createElement('option');
+                    option.value = sensor.id;
+                    option.textContent = `${sensor.name} (${sensor.type}) - ${sensor.mqtt_topic}`;
+                    option.dataset.sensor = JSON.stringify(sensor);
+                    dropdown.appendChild(option);
+                });
+            }
+
+            addSelectedSensors() {
+                const dropdown = document.getElementById('available-sensors-dropdown');
+                const selectedOptions = Array.from(dropdown.selectedOptions);
+                
+                if (selectedOptions.length === 0) {
+                    this.showToast('Please select sensors to add', 'warning');
+                    return;
+                }
+
+                let addedCount = 0;
+                selectedOptions.forEach(option => {
+                    if (option.dataset.sensor) {
+                        const sensor = JSON.parse(option.dataset.sensor);
+                        if (!this.sensors.find(s => s.id === sensor.id)) {
+                            this.sensors.push(sensor);
+                            addedCount++;
+                        }
+                    }
+                });
+
+                this.displaySensors();
+                this.showToast(`Added ${addedCount} sensors`, 'success');
+            }
+
+            async refreshAvailableSensors() {
+                this.setLoading('refresh-sensors-btn', true);
+                
+                try {
+                    const result = await mockAPI.searchSensors({ searchTerm: '', type: '', priority: '' });
+                    if (result.success) {
+                        this.availableSensors = result.sensors || [];
+                        this.populateAvailableSensorsDropdown();
+                        this.showToast('Available sensors refreshed', 'success');
+                    } else {
+                        this.showToast('Failed to refresh sensors', 'error');
+                    }
+                } catch (error) {
+                    this.showToast('Failed to refresh sensors', 'error');
+                } finally {
+                    this.setLoading('refresh-sensors-btn', false);
+                }
+            }
+
+            addCustomSensor() {
+                const sensor = {
+                    id: 'custom_' + Date.now(),
+                    name: 'Custom Sensor',
+                    type: 'temperature',
+                    unit: '°C',
+                    priority: 'medium',
+                    mqtt_topic: 'sensors/custom/sensor',
+                    value: '0',
+                    enabled: true,
+                    slot: 0,
+                    color: '#FF6B6B',
+                    duration: 10
+                };
+                
+                this.sensors.push(sensor);
+                this.displaySensors();
+                this.showToast('Custom sensor added', 'success');
+            }
+
+            displaySensors() {
+                const sensorsList = document.getElementById('sensors-list');
+                sensorsList.innerHTML = '';
+
+                if (this.sensors.length === 0) {
+                    sensorsList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No sensors configured. Click "Scan MQTT Sensors" or "Add Custom Sensor" to add some.</p>';
+                    return;
+                }
+
+                this.sensors.forEach((sensor, index) => {
+                    const sensorCard = document.createElement('div');
+                    sensorCard.className = `sensor-card priority-${sensor.priority}`;
+                    sensorCard.innerHTML = `
+                        <div class="sensor-card-header">
+                            <h4>${sensor.name}</h4>
+                            <span class="sensor-type">${sensor.type}</span>
+                        </div>
+                        <div class="sensor-details">
+                            <div class="sensor-detail">
+                                <label>ID</label>
+                                <span>${sensor.id}</span>
+                            </div>
+                            <div class="sensor-detail">
+                                <label>Unit</label>
+                                <span>${sensor.unit || 'N/A'}</span>
+                            </div>
+                            <div class="sensor-detail">
+                                <label>Slot</label>
+                                <span>${sensor.slot}</span>
+                            </div>
+                            <div class="sensor-detail">
+                                <label>Priority</label>
+                                <span>${sensor.priority}</span>
+                            </div>
+                            <div class="sensor-detail">
+                                <label>Duration</label>
+                                <span>${sensor.duration}s</span>
+                            </div>
+                            <div class="sensor-detail">
+                                <label>Status</label>
+                                <span style="color: ${sensor.enabled ? '#28a745' : '#dc3545'}">${sensor.enabled ? 'Enabled' : 'Disabled'}</span>
+                            </div>
+                        </div>
+                        <div class="sensor-actions">
+                            <button class="btn btn-primary" onclick="testGUI.toggleSensor(${index})">
+                                <i class="fas fa-power-off"></i> ${sensor.enabled ? 'Disable' : 'Enable'}
+                            </button>
+                            <button class="btn btn-secondary" onclick="testGUI.deleteSensor(${index})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    `;
+                    sensorsList.appendChild(sensorCard);
+                });
+            }
+
+            toggleSensor(index) {
+                this.sensors[index].enabled = !this.sensors[index].enabled;
+                this.displaySensors();
+                this.showToast(`Sensor ${this.sensors[index].name} ${this.sensors[index].enabled ? 'enabled' : 'disabled'}`, 'info');
+            }
+
+            deleteSensor(index) {
+                if (confirm(`Are you sure you want to delete sensor "${this.sensors[index].name}"?`)) {
+                    this.sensors.splice(index, 1);
+                    this.displaySensors();
+                    this.showToast('Sensor deleted successfully', 'success');
+                }
+            }
+
+            async testAllConnections() {
+                this.setLoading('test-all-btn', true);
+                
+                try {
+                    await this.testMqttConnection();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await this.discoverAwtrixDevices();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await this.testAwtrixConnection();
+                    
+                    this.showToast('All connection tests completed!', 'success');
+                } catch (error) {
+                    this.showToast('Some connection tests failed', 'error');
+                } finally {
+                    this.setLoading('test-all-btn', false);
+                }
+            }
+
+            saveConfiguration() {
+                const config = {
+                    mqtt: {
+                        host: document.getElementById('mqtt-host').value,
+                        port: parseInt(document.getElementById('mqtt-port').value),
+                        username: document.getElementById('mqtt-username').value,
+                        password: document.getElementById('mqtt-password').value,
+                        topicPrefix: document.getElementById('mqtt-topic').value
+                    },
+                    awtrix: {
+                        ip: document.getElementById('awtrix-ip').value,
+                        port: parseInt(document.getElementById('awtrix-port').value)
+                    },
+                    sensors: this.sensors
+                };
+
+                // Save to localStorage for demo
+                localStorage.setItem('awtrix-config', JSON.stringify(config));
+                this.showToast('Configuration saved successfully!', 'success');
+            }
+
+            resetToDefaults() {
+                if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                    this.loadConfiguration();
+                    this.sensors = [];
+                    this.displaySensors();
+                    this.showToast('Configuration reset to defaults', 'info');
+                }
+            }
+
+            setLoading(buttonId, loading) {
+                const button = document.getElementById(buttonId);
+                if (loading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+
+            updateStatus(elementId, text, type) {
+                const element = document.getElementById(elementId);
+                const icon = element.querySelector('i');
+                const span = element.querySelector('span');
+                
+                span.textContent = text;
+                element.className = `status-indicator ${type}`;
+                
+                if (type === 'success') {
+                    icon.className = 'fas fa-check-circle';
+                } else if (type === 'error') {
+                    icon.className = 'fas fa-times-circle';
+                } else if (type === 'warning') {
+                    icon.className = 'fas fa-exclamation-triangle';
+                } else {
+                    icon.className = 'fas fa-circle';
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                
+                toastContainer.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            }
+        }
+
+        // Initialize the test GUI when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.testGUI = new TestAwtrixGUI();
+        });
+    </script>
+</body>
+</html>
