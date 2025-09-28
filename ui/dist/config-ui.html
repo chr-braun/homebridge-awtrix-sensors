@@ -3,746 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWTRIX Sensors - Configuration</title>
+    <title>AWTRIX Sensors - Konfiguration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="config-ui.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="config-container">
-        <!-- Header -->
         <div class="config-header">
-            <h1><i class="fas fa-matrix"></i> AWTRIX Sensors Configuration</h1>
-            <p>Configure your AWTRIX devices and MQTT settings</p>
-            
-            <!-- GUI Toggle Button -->
-            <div class="gui-toggle-section">
-                <button id="gui-toggle-btn" class="btn btn-primary btn-large" onclick="toggleGUI()">
-                    <i class="fas fa-desktop"></i> <span id="gui-toggle-text">Erweiterte GUI Anzeigen</span>
+            <h1><i class="fas fa-microchip"></i> AWTRIX Sensors Konfiguration</h1>
+            <p>Konfigurieren Sie Ihre AWTRIX Sensoren und Automatisierungs-Regeln</p>
+        </div>
+
+        <div class="config-content">
+            <!-- Navigation Tabs -->
+            <div class="config-tabs">
+                <button class="tab-btn active" onclick="switchTab('config')">
+                    <i class="fas fa-cog"></i> Konfiguration
                 </button>
-                <p class="gui-description">Klicken Sie hier für die vollständige AWTRIX-Konfigurationsoberfläche mit allen Features!</p>
-            </div>
-        </div>
-
-        <!-- Integrated GUI Container -->
-        <div id="integrated-gui-container">
-            <div class="gui-wrapper">
-                <div class="gui-header">
-                    <h2>🎯 AWTRIX Erweiterte Konfiguration</h2>
-                    <button class="btn btn-secondary" onclick="toggleGUI()">
-                        <i class="fas fa-arrow-left"></i> Zurück zur Standard-Konfiguration
-                    </button>
-                </div>
-                
-                <!-- Tab Navigation -->
-                <div class="gui-tabs">
-                    <button class="gui-tab active" onclick="switchTab('mqtt')">MQTT</button>
-                    <button class="gui-tab" onclick="switchTab('awtrix')">AWTRIX</button>
-                    <button class="gui-tab" onclick="switchTab('sensors')">Sensoren</button>
-                    <button class="gui-tab" onclick="switchTab('display')">Anzeige</button>
-                    <button class="gui-tab" onclick="switchTab('rules')">Regeln</button>
-                    <button class="gui-tab" onclick="switchTab('test')">Tests</button>
-                </div>
-                
-                <!-- Tab Content -->
-                <div class="gui-content">
-                    <!-- MQTT Tab -->
-                    <div id="mqtt-tab" class="tab-content active">
-                        <div class="section">
-                            <h3>🔧 MQTT Server Konfiguration</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="gui-mqtt-host">Host Address</label>
-                                    <input type="text" id="gui-mqtt-host" value="192.168.178.29">
-                                </div>
-                                <div class="form-group">
-                                    <label for="gui-mqtt-port">Port</label>
-                                    <input type="number" id="gui-mqtt-port" value="1883">
-                                </div>
-                                <div class="form-group">
-                                    <label for="gui-mqtt-username">Benutzername</label>
-                                    <input type="text" id="gui-mqtt-username" value="biber">
-                                </div>
-                                <div class="form-group">
-                                    <label for="gui-mqtt-password">Passwort</label>
-                                    <input type="password" id="gui-mqtt-password" value="2203801826">
-                                </div>
-                            </div>
-                            <button class="btn btn-success" onclick="testMqttConnection()">
-                                <i class="fas fa-wifi"></i> MQTT Testen
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- AWTRIX Tab -->
-                    <div id="awtrix-tab" class="tab-content">
-                        <div class="section">
-                            <h3>📱 AWTRIX Geräte</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="gui-awtrix-ip">AWTRIX IP-Adresse</label>
-                                    <input type="text" id="gui-awtrix-ip" value="192.168.178.151">
-                                </div>
-                                <div class="form-group">
-                                    <label for="gui-awtrix-port">AWTRIX Port</label>
-                                    <input type="number" id="gui-awtrix-port" value="80">
-                                </div>
-                            </div>
-                            <button class="btn btn-success" onclick="discoverAwtrixDevices()">
-                                <i class="fas fa-search"></i> AWTRIX Suchen
-                            </button>
-                            <button class="btn btn-warning" onclick="testAwtrixConnection()">
-                                <i class="fas fa-paper-plane"></i> Test-Nachricht
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Sensors Tab -->
-                    <div id="sensors-tab" class="tab-content">
-                        <div class="section">
-                            <h3>📊 Sensor Management</h3>
-                            <button class="btn btn-success" onclick="scanMqttSensors()">
-                                <i class="fas fa-search"></i> Sensoren Scannen
-                            </button>
-                            <div id="sensors-list" class="sensors-list">
-                                <!-- Sensoren werden hier angezeigt -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Display Tab -->
-                    <div id="display-tab" class="tab-content">
-                        <div class="section">
-                            <h3>🎨 Anzeige-Einstellungen</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="display-mode">Anzeige-Modus</label>
-                                    <select id="display-mode">
-                                        <option value="rotation">Rotation</option>
-                                        <option value="priority">Priorität</option>
-                                        <option value="manual">Manuell</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="rotation-interval">Rotations-Intervall (Sekunden)</label>
-                                    <input type="number" id="rotation-interval" value="10" min="1" max="300">
-                                </div>
-                                <div class="form-group">
-                                    <label for="brightness">Helligkeit (%)</label>
-                                    <input type="range" id="brightness" min="0" max="100" value="80">
-                                    <span id="brightness-value">80%</span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="text-color">Text-Farbe</label>
-                                    <input type="color" id="text-color" value="#00ff00">
-                                </div>
-                            </div>
-                            <button class="btn btn-success" onclick="saveDisplaySettings()">
-                                <i class="fas fa-save"></i> Anzeige-Einstellungen Speichern
-                            </button>
-                        </div>
-                        
-                        <div class="section">
-                            <h3>📱 Icon-Management</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="icon-search">Icon Suchen</label>
-                                    <input type="text" id="icon-search" placeholder="Icon-Name eingeben...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="icon-category">Kategorie</label>
-                                    <select id="icon-category">
-                                        <option value="all">Alle</option>
-                                        <option value="weather">Wetter</option>
-                                        <option value="time">Zeit</option>
-                                        <option value="status">Status</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" onclick="searchIcons()">
-                                <i class="fas fa-search"></i> Icons Suchen
-                            </button>
-                            <div id="icon-gallery" class="icon-gallery">
-                                <!-- Icons werden hier angezeigt -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Rules Tab -->
-                    <div id="rules-tab" class="tab-content">
-                        <div class="section">
-                            <h3>🤖 Einfache Regel-Erstellung</h3>
-                            <p>Erstellen Sie Regeln in 4 einfachen Schritten:</p>
-                            
-                            <!-- Step 1: Sensor auswählen -->
-                            <div class="rule-step">
-                                <h4>1️⃣ Sensor auswählen</h4>
-                                <div class="form-group">
-                                    <label for="rule-sensor-select">Verfügbare Sensoren:</label>
-                                    <div class="sensor-dropdown-container">
-                                        <select id="rule-sensor-select" class="form-control" onchange="onSensorSelected()">
-                                            <option value="">Sensoren laden...</option>
-                                        </select>
-                                        <button class="btn btn-secondary btn-sm" onclick="loadAvailableSensors()" title="Sensoren aktualisieren">
-                                            <i class="fas fa-sync"></i>
-                                        </button>
-                                    </div>
-                                    <div id="sensor-info" class="sensor-info" style="display: none;">
-                                        <div class="sensor-details">
-                                            <div class="sensor-name"></div>
-                                            <div class="sensor-type"></div>
-                                            <div class="sensor-value"></div>
-                                            <div class="sensor-topic"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Step 2: Anzeige wählen -->
-                            <div class="rule-step">
-                                <h4>2️⃣ Anzeige wählen</h4>
-                                <div class="form-group">
-                                    <label for="rule-template-select">Anzeige-Template:</label>
-                                    <select id="rule-template-select" class="form-control" onchange="onTemplateSelected()">
-                                        <option value="">Template auswählen...</option>
-                                        <option value="temperature_warning">🌡️ Temperatur-Warnung</option>
-                                        <option value="motion_detected">🏃 Bewegung erkannt</option>
-                                        <option value="humidity_status">💧 Luftfeuchtigkeit</option>
-                                        <option value="light_status">💡 Licht-Status</option>
-                                        <option value="pressure_status">📊 Luftdruck</option>
-                                        <option value="custom">📝 Benutzerdefiniert</option>
-                                    </select>
-                                    <div id="template-suggestions" class="template-suggestions" style="display: none;">
-                                        <h5>💡 Empfohlene Templates für diesen Sensortyp:</h5>
-                                        <div class="suggestion-chips">
-                                            <!-- Wird dynamisch gefüllt -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group" id="custom-text-group" style="display: none;">
-                                    <label for="rule-custom-text">Benutzerdefinierter Text:</label>
-                                    <input type="text" id="rule-custom-text" class="form-control" placeholder="z.B. {sensor_name}: {value}{unit}" oninput="updateSimpleRulePreview()">
-                                    <small>Verfügbare Variablen: {sensor_name}, {value}, {unit}</small>
-                                </div>
-                            </div>
-
-                            <!-- Step 3: Dauer einstellen -->
-                            <div class="rule-step">
-                                <h4>3️⃣ Dauer einstellen</h4>
-                                <div class="form-group">
-                                    <label for="rule-duration-slider">Anzeigedauer: <span id="rule-duration-value">5</span> Sekunden</label>
-                                    <input type="range" id="rule-duration-slider" class="form-control" min="1" max="60" value="5">
-                                </div>
-                            </div>
-
-                            <!-- Step 4: Erscheinungsbild -->
-                            <div class="rule-step">
-                                <h4>4️⃣ Erscheinungsbild</h4>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="rule-color-select">Textfarbe:</label>
-                                        <select id="rule-color-select" class="form-control">
-                                            <option value="#FF6B6B">🔴 Rot</option>
-                                            <option value="#4ECDC4">🔵 Blau</option>
-                                            <option value="#45B7D1">🔵 Hellblau</option>
-                                            <option value="#FFA726">🟠 Orange</option>
-                                            <option value="#9C27B0">🟣 Lila</option>
-                                            <option value="#00BCD4">🔵 Cyan</option>
-                                            <option value="#4CAF50">🟢 Grün</option>
-                                            <option value="#FFFFFF">⚪ Weiß</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rule-icon-select">Icon:</label>
-                                        <select id="rule-icon-select" class="form-control">
-                                            <option value="🌡️">🌡️ Temperatur</option>
-                                            <option value="🏃">🏃 Bewegung</option>
-                                            <option value="💧">💧 Luftfeuchtigkeit</option>
-                                            <option value="💡">💡 Licht</option>
-                                            <option value="📊">📊 Diagramm</option>
-                                            <option value="⚠️">⚠️ Warnung</option>
-                                            <option value="✅">✅ OK</option>
-                                            <option value="❌">❌ Fehler</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rule-effect-select">Effekt:</label>
-                                        <select id="rule-effect-select" class="form-control">
-                                            <option value="none">Kein Effekt</option>
-                                            <option value="blink">Blinken</option>
-                                            <option value="fade">Ein-/Ausblenden</option>
-                                            <option value="rainbow">Regenbogen</option>
-                                            <option value="scroll">Scrollen</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Vorschau -->
-                            <div class="rule-step">
-                                <h4>👁️ Vorschau</h4>
-                                <div class="rule-preview" id="rule-preview">
-                                    Wählen Sie einen Sensor und ein Template aus
-                                </div>
-                            </div>
-
-                            <!-- Aktionen -->
-                            <div class="rule-actions">
-                                <button class="btn btn-warning" onclick="testSimpleRule()">
-                                    <i class="fas fa-flask"></i> Regel testen
-                                </button>
-                                <button class="btn btn-success" onclick="saveSimpleRule()">
-                                    <i class="fas fa-save"></i> Regel speichern
-                                </button>
-                                <button class="btn btn-secondary" onclick="resetSimpleRule()">
-                                    <i class="fas fa-undo"></i> Zurücksetzen
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="section">
-                            <h3>📋 Aktive Regeln</h3>
-                            <div id="rules-list" class="rules-list">
-                                <!-- Regeln werden hier angezeigt -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Test Tab -->
-                    <div id="test-tab" class="tab-content">
-                        <div class="section">
-                            <h3>🧪 Test Suite</h3>
-                            <div class="test-buttons">
-                                <button class="btn btn-primary" onclick="runAllTests()">
-                                    <i class="fas fa-play"></i> Alle Tests Ausführen
-                                </button>
-                                <button class="btn btn-success" onclick="testMqttConnection()">
-                                    <i class="fas fa-wifi"></i> MQTT Test
-                                </button>
-                                <button class="btn btn-warning" onclick="testAwtrixConnection()">
-                                    <i class="fas fa-desktop"></i> AWTRIX Test
-                                </button>
-                                <button class="btn btn-info" onclick="scanMqttSensors()">
-                                    <i class="fas fa-thermometer-half"></i> Sensor Test
-                                </button>
-                            </div>
-                            <div id="test-results" class="test-results">
-                                <!-- Test-Ergebnisse werden hier angezeigt -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Configuration Form -->
-        <form id="config-form" class="config-form" style="display: none;">
-            <!-- MQTT Configuration -->
-            <div class="config-section">
-                <h2><i class="fas fa-wifi"></i> MQTT Server Configuration</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="mqtt-host">Host Address</label>
-                        <input type="text" id="mqtt-host" name="mqtt.host" placeholder="192.168.178.29" required>
-                        <small>IP address of your MQTT broker</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="mqtt-port">Port</label>
-                        <input type="number" id="mqtt-port" name="mqtt.port" placeholder="1883" min="1" max="65535" required>
-                        <small>MQTT broker port (usually 1883)</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="mqtt-username">Username</label>
-                        <input type="text" id="mqtt-username" name="mqtt.username" placeholder="biber" required>
-                        <small>MQTT broker username</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="mqtt-password">Password</label>
-                        <input type="password" id="mqtt-password" name="mqtt.password" placeholder="2203801826" required>
-                        <small>MQTT broker password</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="mqtt-topic">Topic Prefix</label>
-                        <input type="text" id="mqtt-topic" name="mqtt.topicPrefix" placeholder="awtrix_0b86f0" required>
-                        <small>MQTT topic prefix for AWTRIX messages</small>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="test-mqtt-btn" class="btn btn-test">
-                        <i class="fas fa-wifi"></i> Test MQTT Connection
-                    </button>
-                    <div class="status-indicator" id="mqtt-status">
-                        <i class="fas fa-circle"></i>
-                        <span>Not tested</span>
-                    </div>
-                </div>
+                <button class="tab-btn" onclick="switchTab('sensors')">
+                    <i class="fas fa-thermometer-half"></i> Sensoren
+                </button>
+                <button class="tab-btn" onclick="switchTab('awtrix')">
+                    <i class="fas fa-tv"></i> AWTRIX
+                </button>
+                <button class="tab-btn" onclick="switchTab('rules')">
+                    <i class="fas fa-robot"></i> Assistent
+                </button>
             </div>
 
-            <!-- AWTRIX Configuration -->
-            <div class="config-section">
-                <h2><i class="fas fa-desktop"></i> AWTRIX Device Configuration</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="awtrix-ip">AWTRIX IP Address</label>
-                        <input type="text" id="awtrix-ip" name="awtrix.ip" placeholder="192.168.178.151" required>
-                        <small>IP address of your AWTRIX device</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="awtrix-port">AWTRIX Port</label>
-                        <input type="number" id="awtrix-port" name="awtrix.port" placeholder="80" min="1" max="65535" required>
-                        <small>HTTP port of your AWTRIX device (usually 80)</small>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="discover-awtrix-btn" class="btn btn-test">
-                        <i class="fas fa-search"></i> Discover AWTRIX Devices
-                    </button>
-                    <button type="button" id="test-awtrix-btn" class="btn btn-test">
-                        <i class="fas fa-paper-plane"></i> Send Test Message
-                    </button>
-                    <div class="status-indicator" id="awtrix-status">
-                        <i class="fas fa-circle"></i>
-                        <span>Not tested</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sensor Display Configuration -->
-            <div class="config-section">
-                <h2><i class="fas fa-sliders-h"></i> Sensor Display Configuration</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="display-mode">Display Mode</label>
-                        <select id="display-mode" name="sensorDisplay.mode" required>
-                            <option value="rotation">Rotation (alle Sensoren nacheinander)</option>
-                            <option value="priority">Priority (nur wichtige Sensoren)</option>
-                            <option value="manual">Manual (manuelle Auswahl)</option>
-                        </select>
-                        <small>How sensors are displayed on AWTRIX</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="rotation-interval">Rotation Interval (seconds)</label>
-                        <input type="number" id="rotation-interval" name="sensorDisplay.rotationInterval" placeholder="10" min="5" max="60" required>
-                        <small>Time between sensor changes in rotation mode</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="priority-threshold">Priority Threshold</label>
-                        <select id="priority-threshold" name="sensorDisplay.priorityThreshold" required>
-                            <option value="high">High (nur kritische Werte)</option>
-                            <option value="medium">Medium (wichtige Werte)</option>
-                            <option value="low">Low (alle Werte)</option>
-                        </select>
-                        <small>Minimum priority level to display</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sensor Management -->
-            <div class="config-section">
-                <h2><i class="fas fa-thermometer-half"></i> Sensor Management</h2>
-                
-                <!-- Sensor Search & Selection -->
-                <div class="sensor-search-section">
-                    <h3><i class="fas fa-search"></i> Find & Select Sensors</h3>
-                    <div class="search-controls">
-                        <div class="search-input-group">
-                            <input type="text" id="sensor-search-input" placeholder="Search for sensors by name, type, or topic..." class="search-input">
-                            <button type="button" id="search-sensors-btn" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Search
-                            </button>
-                        </div>
-                        <div class="search-filters">
-                            <select id="sensor-type-filter" class="filter-select">
-                                <option value="">All Types</option>
-                                <option value="temperature">Temperature</option>
-                                <option value="humidity">Humidity</option>
-                                <option value="motion">Motion</option>
-                                <option value="light">Light</option>
-                                <option value="pressure">Pressure</option>
-                                <option value="battery">Battery</option>
-                                <option value="wifi">WiFi</option>
-                            </select>
-                            <select id="sensor-priority-filter" class="filter-select">
-                                <option value="">All Priorities</option>
-                                <option value="high">High Priority</option>
-                                <option value="medium">Medium Priority</option>
-                                <option value="low">Low Priority</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Available Sensors Dropdown -->
-                    <div class="available-sensors-section">
-                        <h4>Available Sensors</h4>
-                        <div class="sensors-dropdown-container">
-                            <select id="available-sensors-dropdown" class="sensors-dropdown" multiple>
-                                <!-- Available sensors will be populated here -->
-                            </select>
-                            <div class="dropdown-actions">
-                                <button type="button" id="add-selected-sensors-btn" class="btn btn-success">
-                                    <i class="fas fa-plus"></i> Add Selected
-                                </button>
-                                <button type="button" id="refresh-sensors-btn" class="btn btn-secondary">
-                                    <i class="fas fa-sync"></i> Refresh
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sensor Controls -->
-                <div class="sensor-controls">
-                    <button type="button" id="scan-sensors-btn" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Scan MQTT Sensors
-                    </button>
-                    <button type="button" id="add-sensor-btn" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Add Custom Sensor
-                    </button>
-                    <button type="button" id="import-sensors-btn" class="btn btn-info">
-                        <i class="fas fa-download"></i> Import Sensors
-                    </button>
-                </div>
-                
-                <div class="sensors-list" id="sensors-list">
-                    <!-- Sensors will be populated here -->
-                </div>
-            </div>
-
-            <!-- Rule Engine -->
-            <div class="config-section">
-                <h2><i class="fas fa-cogs"></i> Automation Rules</h2>
-                
-                <!-- Rule Creation -->
-                <div class="rule-creation-section">
-                    <h3><i class="fas fa-plus-circle"></i> Create New Rule</h3>
-                    <div class="rule-form">
+            <!-- Configuration Tab -->
+            <div id="config-tab" class="tab-content active">
+                <div class="config-section">
+                    <h3><i class="fas fa-server"></i> MQTT Server Konfiguration</h3>
+                    <div class="config-form">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="rule-name">Rule Name</label>
-                                <input type="text" id="rule-name" placeholder="Temperature Alert Rule" required>
+                                <label for="mqtt-host">Host:</label>
+                                <input type="text" id="mqtt-host" class="form-control" placeholder="192.168.1.100">
                             </div>
                             <div class="form-group">
-                                <label for="rule-enabled">
-                                    <input type="checkbox" id="rule-enabled" checked>
-                                    Rule Enabled
-                                </label>
+                                <label for="mqtt-port">Port:</label>
+                                <input type="number" id="mqtt-port" class="form-control" placeholder="1883">
                             </div>
                         </div>
-                        
-                        <div class="rule-condition">
-                            <h4>Condition</h4>
-                            <div class="condition-row">
-                                <select id="rule-sensor" class="rule-select" required>
-                                    <option value="">Select Sensor</option>
-                                    <!-- Sensors will be populated here -->
-                                </select>
-                                <select id="rule-operator" class="rule-select" required>
-                                    <option value="">Select Operator</option>
-                                    <option value="greater_than">Greater Than</option>
-                                    <option value="less_than">Less Than</option>
-                                    <option value="equals">Equals</option>
-                                    <option value="not_equals">Not Equals</option>
-                                    <option value="contains">Contains</option>
-                                    <option value="starts_with">Starts With</option>
-                                </select>
-                                <input type="text" id="rule-value" placeholder="Value" class="rule-input" required>
-                                <select id="rule-unit" class="rule-select">
-                                    <option value="">Unit (optional)</option>
-                                    <option value="°C">°C</option>
-                                    <option value="°F">°F</option>
-                                    <option value="%">%</option>
-                                    <option value="lux">lux</option>
-                                    <option value="hPa">hPa</option>
-                                    <option value="V">V</option>
-                                </select>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mqtt-username">Benutzername:</label>
+                                <input type="text" id="mqtt-username" class="form-control" placeholder="mqtt_user">
+                            </div>
+                            <div class="form-group">
+                                <label for="mqtt-password">Passwort:</label>
+                                <input type="password" id="mqtt-password" class="form-control" placeholder="mqtt_password">
                             </div>
                         </div>
-                        
-                        <div class="rule-action">
-                            <h4>Action</h4>
-                            <div class="action-row">
-                                <select id="rule-action-type" class="rule-select" required>
-                                    <option value="">Select Action</option>
-                                    <option value="display_message">Display Message</option>
-                                    <option value="change_color">Change Color</option>
-                                    <option value="change_brightness">Change Brightness</option>
-                                    <option value="enable_sensor">Enable Sensor</option>
-                                    <option value="disable_sensor">Disable Sensor</option>
-                                    <option value="send_notification">Send Notification</option>
-                                </select>
-                                <input type="text" id="rule-action-value" placeholder="Action Value" class="rule-input">
-                                <select id="rule-priority" class="rule-select">
-                                    <option value="high">High Priority</option>
-                                    <option value="medium">Medium Priority</option>
-                                    <option value="low">Low Priority</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="rule-timing">
-                            <h4>Timing</h4>
-                            <div class="timing-row">
-                                <div class="form-group">
-                                    <label for="rule-delay">Delay (seconds)</label>
-                                    <input type="number" id="rule-delay" value="0" min="0" max="3600">
-                                </div>
-                                <div class="form-group">
-                                    <label for="rule-duration">Duration (seconds)</label>
-                                    <input type="number" id="rule-duration" value="10" min="1" max="3600">
-                                </div>
-                                <div class="form-group">
-                                    <label for="rule-repeat">
-                                        <input type="checkbox" id="rule-repeat">
-                                        Repeat Rule
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="rule-actions">
-                            <button type="button" id="test-rule-btn" class="btn btn-test">
-                                <i class="fas fa-play"></i> Test Rule
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="testMqttConnection()">
+                                <i class="fas fa-wifi"></i> MQTT Testen
                             </button>
-                            <button type="button" id="save-rule-btn" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Rule
+                            <button class="btn btn-success" onclick="saveConfiguration()">
+                                <i class="fas fa-save"></i> Speichern
                             </button>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Rules List -->
-                <div class="rules-list-section">
-                    <h3><i class="fas fa-list"></i> Active Rules</h3>
-                    <div class="rules-list" id="rules-list">
-                        <!-- Rules will be populated here -->
+
+                <div class="config-section">
+                    <h3><i class="fas fa-tv"></i> AWTRIX Gerät Konfiguration</h3>
+                    <div class="config-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="awtrix-ip">IP-Adresse:</label>
+                                <input type="text" id="awtrix-ip" class="form-control" placeholder="192.168.1.200">
+                            </div>
+                            <div class="form-group">
+                                <label for="awtrix-port">Port:</label>
+                                <input type="number" id="awtrix-port" class="form-control" placeholder="7001">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="testAwtrixConnection()">
+                                <i class="fas fa-tv"></i> AWTRIX Testen
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Advanced Settings -->
-            <div class="config-section">
-                <h2><i class="fas fa-cog"></i> Advanced Settings</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="brightness">Default Brightness</label>
-                        <input type="range" id="brightness" name="displaySettings.brightness" min="10" max="100" value="80">
-                        <span class="range-value">80%</span>
-                        <small>Default brightness for AWTRIX display</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="auto-brightness">
-                            <input type="checkbox" id="auto-brightness" name="displaySettings.autoBrightness">
-                            Auto Brightness
-                        </label>
-                        <small>Automatically adjust brightness based on ambient light</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="night-mode">
-                            <input type="checkbox" id="night-mode" name="displaySettings.nightMode.enabled">
-                            Night Mode
-                        </label>
-                        <small>Reduce brightness during night hours</small>
+            <!-- Sensors Tab -->
+            <div id="sensors-tab" class="tab-content">
+                <div class="section">
+                    <h3><i class="fas fa-thermometer-half"></i> Verfügbare Sensoren</h3>
+                    <div class="sensors-list" id="sensors-list">
+                        <div class="no-sensors">
+                            <i class="fas fa-search"></i>
+                            <p>Keine Sensoren gefunden. Verwenden Sie den Assistenten, um Sensoren zu suchen und zu konfigurieren.</p>
+                            <button class="btn btn-primary" onclick="switchTab('rules')">
+                                <i class="fas fa-robot"></i> Assistent starten
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Form Actions -->
-            <div class="form-actions-main">
-                <button type="button" id="reset-btn" class="btn btn-secondary">
-                    <i class="fas fa-undo"></i> Reset to Defaults
-                </button>
-                <button type="button" id="save-btn" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Save Configuration
-                </button>
-                <button type="button" id="test-all-btn" class="btn btn-success">
-                    <i class="fas fa-play"></i> Test All Connections
-                </button>
+            <!-- AWTRIX Tab -->
+            <div id="awtrix-tab" class="tab-content">
+                <div class="section">
+                    <h3><i class="fas fa-tv"></i> AWTRIX Geräte</h3>
+                    <div class="awtrix-devices" id="awtrix-devices">
+                        <div class="no-devices">
+                            <i class="fas fa-search"></i>
+                            <p>Keine AWTRIX Geräte gefunden. Überprüfen Sie die Netzwerkverbindung.</p>
+                            <button class="btn btn-primary" onclick="discoverAwtrixDevices()">
+                                <i class="fas fa-search"></i> Geräte suchen
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </form>
 
-        <!-- Sensor Modal -->
-        <div class="modal" id="sensor-modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-thermometer-half"></i> Add/Edit Sensor</h3>
-                    <button type="button" class="modal-close" id="close-sensor-modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <form id="sensor-form">
-                        <div class="form-group">
-                            <label for="sensor-id">Sensor ID</label>
-                            <input type="text" id="sensor-id" name="id" placeholder="temperature_1" required>
+            <!-- Rules Tab - Assistenten-Workflow -->
+            <div id="rules-tab" class="tab-content">
+                <div class="assistant-container">
+                    <!-- Fortschrittsbalken -->
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 33.33%"></div>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-name">Display Name</label>
-                            <input type="text" id="sensor-name" name="name" placeholder="Temperatur Wohnzimmer" required>
+                        <div class="progress-steps">
+                            <div class="step active" id="step-1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Sensor-Suche</div>
+                            </div>
+                            <div class="step" id="step-2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">Konfiguration</div>
+                            </div>
+                            <div class="step" id="step-3">
+                                <div class="step-number">3</div>
+                                <div class="step-label">Regeln</div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-type">Sensor Type</label>
-                            <select id="sensor-type" name="type" required>
-                                <option value="temperature">Temperature</option>
-                                <option value="humidity">Humidity</option>
-                                <option value="motion">Motion</option>
-                                <option value="light">Light</option>
-                                <option value="pressure">Pressure</option>
-                                <option value="battery">Battery</option>
-                                <option value="wifi">WiFi Signal</option>
-                                <option value="custom">Custom</option>
-                            </select>
+                    </div>
+
+                    <!-- Schritt 1: Sensor-Suche -->
+                    <div class="assistant-step active" id="assistant-step-1">
+                        <div class="step-header">
+                            <h3>🔍 Schritt 1: Sensor-Suche</h3>
+                            <p>Laden Sie verfügbare Sensoren über MQTT und wählen Sie einen aus.</p>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-unit">Unit</label>
-                            <input type="text" id="sensor-unit" name="unit" placeholder="°C">
+                        
+                        <div class="step-content">
+                            <div class="form-group">
+                                <label for="assistant-sensor-select">Verfügbare Sensoren:</label>
+                                <div class="sensor-dropdown-container">
+                                    <select id="assistant-sensor-select" class="form-control" onchange="onAssistantSensorSelected()">
+                                        <option value="">Zuerst Sensoren laden...</option>
+                                    </select>
+                                    <button class="btn btn-primary" onclick="loadAssistantSensors()" id="load-sensors-btn">
+                                        <i class="fas fa-search"></i> Sensoren suchen
+                                    </button>
+                                </div>
+                                
+                                <div id="assistant-sensor-info" class="sensor-info" style="display: none;">
+                                    <div class="sensor-details">
+                                        <div class="sensor-name"></div>
+                                        <div class="sensor-type"></div>
+                                        <div class="sensor-value"></div>
+                                        <div class="sensor-topic"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-mqtt-topic">MQTT Topic</label>
-                            <input type="text" id="sensor-mqtt-topic" name="mqtt_topic" placeholder="sensors/temperature/living_room" required>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-primary" id="step1-next-btn" onclick="nextStep()" disabled>
+                                <i class="fas fa-arrow-right"></i> Weiter zur Konfiguration
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-slot">AWTRIX Slot</label>
-                            <select id="sensor-slot" name="slot" required>
-                                <option value="0">Slot 0</option>
-                                <option value="1">Slot 1</option>
-                                <option value="2">Slot 2</option>
-                                <option value="3">Slot 3</option>
-                                <option value="4">Slot 4</option>
-                                <option value="5">Slot 5</option>
-                                <option value="6">Slot 6</option>
-                                <option value="7">Slot 7</option>
-                            </select>
+                    </div>
+
+                    <!-- Schritt 2: Sensor-Konfiguration -->
+                    <div class="assistant-step" id="assistant-step-2">
+                        <div class="step-header">
+                            <h3>⚙️ Schritt 2: Sensor-Konfiguration</h3>
+                            <p>Konfigurieren Sie die Anzeige-Einstellungen für den gewählten Sensor.</p>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-color">Color</label>
-                            <input type="color" id="sensor-color" name="color" value="#FF6B6B">
+                        
+                        <div class="step-content">
+                            <div class="config-grid">
+                                <div class="config-group">
+                                    <label for="sensor-color">Farbe:</label>
+                                    <input type="color" id="sensor-color" class="form-control" value="#00ff00">
+                                </div>
+                                
+                                <div class="config-group">
+                                    <label for="sensor-duration">Anzeigedauer (Sekunden):</label>
+                                    <input type="number" id="sensor-duration" class="form-control" value="5" min="1" max="60">
+                                </div>
+                                
+                                <div class="config-group">
+                                    <label for="sensor-display-type">Anzeigeart:</label>
+                                    <select id="sensor-display-type" class="form-control">
+                                        <option value="normal">Normal</option>
+                                        <option value="blink">Blinkend</option>
+                                        <option value="flash">Flackernd</option>
+                                        <option value="scroll">Scrollend</option>
+                                        <option value="fade">Fade</option>
+                                        <option value="rainbow">Regenbogen</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="config-group">
+                                    <label for="sensor-icon">Icon:</label>
+                                    <select id="sensor-icon" class="form-control">
+                                        <option value="thermometer">🌡️ Thermometer</option>
+                                        <option value="droplet">💧 Wassertropfen</option>
+                                        <option value="sun">☀️ Sonne</option>
+                                        <option value="moon">🌙 Mond</option>
+                                        <option value="heart">❤️ Herz</option>
+                                        <option value="star">⭐ Stern</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="config-group">
+                                    <label for="sensor-priority">Priorität:</label>
+                                    <select id="sensor-priority" class="form-control">
+                                        <option value="low">Niedrig</option>
+                                        <option value="medium" selected>Mittel</option>
+                                        <option value="high">Hoch</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="config-preview">
+                                <h4>Vorschau:</h4>
+                                <div id="config-preview-display" class="preview-display">
+                                    <span id="preview-text">Sensor-Wert</span>
+                                    <span id="preview-icon">🌡️</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-duration">Duration (seconds)</label>
-                            <input type="number" id="sensor-duration" name="duration" min="1" max="60" value="10" required>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-secondary" onclick="prevStep()">
+                                <i class="fas fa-arrow-left"></i> Zurück
+                            </button>
+                            <button class="btn btn-primary" onclick="nextStep()">
+                                <i class="fas fa-arrow-right"></i> Weiter zu Regeln
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-priority">Priority</label>
-                            <select id="sensor-priority" name="priority" required>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                            </select>
+                    </div>
+
+                    <!-- Schritt 3: Regeln & Automatisierung -->
+                    <div class="assistant-step" id="assistant-step-3">
+                        <div class="step-header">
+                            <h3>🤖 Schritt 3: Regeln & Automatisierung</h3>
+                            <p>Erstellen Sie Automatisierungs-Regeln für den konfigurierten Sensor.</p>
                         </div>
-                        <div class="form-group">
-                            <label for="sensor-enabled">
-                                <input type="checkbox" id="sensor-enabled" name="enabled" checked>
-                                Enabled
-                            </label>
+                        
+                        <div class="step-content">
+                            <div class="rule-creation">
+                                <div class="form-group">
+                                    <label for="rule-name">Regel-Name:</label>
+                                    <input type="text" id="rule-name" class="form-control" placeholder="z.B. Temperatur-Warnung">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="rule-condition">Bedingung:</label>
+                                    <div class="condition-row">
+                                        <select id="rule-operator" class="form-control">
+                                            <option value="greater">Größer als</option>
+                                            <option value="less">Kleiner als</option>
+                                            <option value="equal">Gleich</option>
+                                            <option value="not_equal">Ungleich</option>
+                                        </select>
+                                        <input type="number" id="rule-threshold" class="form-control" placeholder="Wert" step="0.1">
+                                        <span id="rule-unit" class="unit-display">°C</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="rule-action">Aktion:</label>
+                                    <select id="rule-action" class="form-control">
+                                        <option value="display">Anzeige senden</option>
+                                        <option value="notification">Benachrichtigung</option>
+                                        <option value="effect">Effekt starten</option>
+                                        <option value="mqtt">MQTT-Nachricht</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="rule-message">Nachricht:</label>
+                                    <input type="text" id="rule-message" class="form-control" placeholder="z.B. Temperatur zu hoch!">
+                                </div>
+                            </div>
+                            
+                            <div class="rule-preview">
+                                <h4>Regel-Vorschau:</h4>
+                                <div id="rule-preview-text" class="preview-text">
+                                    Wenn <strong>Sensor-Wert</strong> <strong>größer als</strong> <strong>25</strong>°C, dann <strong>Anzeige senden</strong>: "Temperatur zu hoch!"
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="cancel-sensor-btn">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="save-sensor-btn">Save Sensor</button>
+                        
+                        <div class="step-actions">
+                            <button class="btn btn-secondary" onclick="prevStep()">
+                                <i class="fas fa-arrow-left"></i> Zurück
+                            </button>
+                            <button class="btn btn-success" onclick="finishAssistant()">
+                                <i class="fas fa-check"></i> Regel erstellen & Fertig
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Toast Notifications -->
-        <div class="toast-container" id="toast-container"></div>
     </div>
 
     <script src="config-ui.js"></script>
