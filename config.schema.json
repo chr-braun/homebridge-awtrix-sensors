@@ -1,0 +1,257 @@
+{
+  "pluginAlias": "AwtrixSensors",
+  "pluginType": "platform",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "platformName": {
+        "title": "Platform Name",
+        "type": "string",
+        "default": "AwtrixSensors",
+        "description": "Name of the AWTRIX Sensors platform"
+      },
+      "mqttHost": {
+        "title": "MQTT Host",
+        "type": "string",
+        "default": "localhost",
+        "description": "MQTT broker host address"
+      },
+      "mqttPort": {
+        "title": "MQTT Port",
+        "type": "integer",
+        "default": 1883,
+        "minimum": 1,
+        "maximum": 65535,
+        "description": "MQTT broker port"
+      },
+      "mqttUsername": {
+        "title": "MQTT Username",
+        "type": "string",
+        "default": "",
+        "description": "MQTT broker username"
+      },
+      "mqttPassword": {
+        "title": "MQTT Password",
+        "type": "string",
+        "default": "",
+        "description": "MQTT broker password"
+      },
+      "mqttTopicPrefix": {
+        "title": "MQTT Topic Prefix",
+        "type": "string",
+        "default": "awtrix_0b86f0",
+        "description": "MQTT topic prefix for AWTRIX communication"
+      },
+      "awtrixIp": {
+        "title": "AWTRIX IP Address",
+        "type": "string",
+        "default": "192.168.178.151",
+        "description": "IP address of the AWTRIX device"
+      },
+      "awtrixPort": {
+        "title": "AWTRIX Port",
+        "type": "integer",
+        "default": 7001,
+        "minimum": 1,
+        "maximum": 65535,
+        "description": "AWTRIX device port"
+      },
+      "scanRange": {
+        "title": "Network Scan Range",
+        "type": "string",
+        "default": "192.168.178",
+        "description": "Network range to scan for AWTRIX devices (e.g., 192.168.178)"
+      },
+      "enableSensorDiscovery": {
+        "title": "Enable Sensor Discovery",
+        "type": "boolean",
+        "default": true,
+        "description": "Enable automatic MQTT sensor discovery"
+      },
+      "scanInterval": {
+        "title": "Scan Interval (minutes)",
+        "type": "integer",
+        "default": 5,
+        "minimum": 1,
+        "maximum": 60,
+        "description": "Interval for sensor discovery scans in minutes"
+      },
+      "topicPatterns": {
+        "title": "MQTT Topic Patterns",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [
+          "sensors/+/temperature",
+          "sensors/+/humidity",
+          "sensors/+/pressure",
+          "sensors/+/motion",
+          "sensors/+/light"
+        ],
+        "description": "MQTT topic patterns to scan for sensors"
+      },
+      "sensors": {
+        "title": "Sensor Configurations",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Sensor Name"
+            },
+            "type": {
+              "type": "string",
+              "enum": ["temperature", "humidity", "motion", "light", "pressure", "custom"],
+              "title": "Sensor Type"
+            },
+            "mqttTopic": {
+              "type": "string",
+              "title": "MQTT Topic"
+            },
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "title": "Enabled"
+            },
+            "displaySlot": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1,
+              "maximum": 8,
+              "title": "Display Slot"
+            },
+            "color": {
+              "type": "string",
+              "default": "#FFFFFF",
+              "title": "Display Color"
+            },
+            "icon": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0,
+              "maximum": 1000,
+              "title": "Icon ID"
+            },
+            "effect": {
+              "type": "string",
+              "enum": ["none", "blink", "fade", "rainbow", "scroll"],
+              "default": "none",
+              "title": "Display Effect"
+            },
+            "duration": {
+              "type": "integer",
+              "default": 5000,
+              "minimum": 1000,
+              "maximum": 60000,
+              "title": "Display Duration (ms)"
+            }
+          },
+          "required": ["name", "type", "mqttTopic"]
+        },
+        "description": "Configure individual sensors"
+      },
+      "rules": {
+        "title": "Sensor Rules",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "Rule ID"
+            },
+            "name": {
+              "type": "string",
+              "title": "Rule Name"
+            },
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "title": "Enabled"
+            },
+            "sensor": {
+              "type": "object",
+              "properties": {
+                "topic": {
+                  "type": "string",
+                  "title": "Sensor Topic"
+                },
+                "name": {
+                  "type": "string",
+                  "title": "Sensor Name"
+                },
+                "type": {
+                  "type": "string",
+                  "title": "Sensor Type"
+                }
+              },
+              "required": ["topic", "name", "type"]
+            },
+            "display": {
+              "type": "object",
+              "properties": {
+                "template": {
+                  "type": "string",
+                  "title": "Display Template"
+                },
+                "customText": {
+                  "type": "string",
+                  "title": "Custom Text"
+                },
+                "duration": {
+                  "type": "integer",
+                  "default": 5000,
+                  "title": "Duration (ms)"
+                },
+                "color": {
+                  "type": "string",
+                  "default": "#FFFFFF",
+                  "title": "Color"
+                },
+                "icon": {
+                  "type": "string",
+                  "default": "0",
+                  "title": "Icon"
+                },
+                "effect": {
+                  "type": "string",
+                  "enum": ["none", "blink", "fade", "rainbow", "scroll"],
+                  "default": "none",
+                  "title": "Effect"
+                }
+              }
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["value", "range", "time", "pattern", "change"],
+                    "title": "Condition Type"
+                  },
+                  "operator": {
+                    "type": "string",
+                    "enum": ["equals", "not_equals", "greater_than", "less_than", "greater_equal", "less_equal", "contains", "not_contains"],
+                    "title": "Operator"
+                  },
+                  "value": {
+                    "type": "string",
+                    "title": "Value"
+                  }
+                },
+                "required": ["type", "operator", "value"]
+              }
+            }
+          },
+          "required": ["id", "name", "sensor", "display"]
+        },
+        "description": "Configure sensor-based rules for AWTRIX display"
+      }
+    },
+    "required": ["mqttHost", "mqttPort", "mqttUsername", "mqttPassword", "awtrixIp", "awtrixPort"]
+  }
+}
