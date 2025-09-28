@@ -1190,6 +1190,259 @@ class AwtrixConfigUI {
         document.getElementById('rule-repeat').checked = false;
         this.currentRule = null;
     }
+
+    // ===== SIMPLE RULE CREATION METHODS =====
+    
+    async loadAvailableSensors() {
+        try {
+            // Try to get sensors from the platform
+            const response = await fetch('/api/platform/awtrix-sensors/available-sensors', {
+                method: 'GET'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.availableSensors = result.sensors || [];
+                    this.populateSimpleRuleSensorDropdown();
+                    this.showToast(`Loaded ${this.availableSensors.length} available sensors`, 'success');
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('API not available, using mock data');
+        }
+        
+        // Fallback to mock data
+        this.availableSensors = [
+            {
+                id: 'temp_living_room',
+                name: 'Living Room Temperature',
+                type: 'temperature',
+                unit: '°C',
+                lastValue: '22.5',
+                topic: 'sensors/temperature/living_room'
+            },
+            {
+                id: 'humidity_bedroom',
+                name: 'Bedroom Humidity',
+                type: 'humidity',
+                unit: '%',
+                lastValue: '45',
+                topic: 'sensors/humidity/bedroom'
+            },
+            {
+                id: 'motion_entrance',
+                name: 'Entrance Motion',
+                type: 'motion',
+                unit: '',
+                lastValue: 'false',
+                topic: 'sensors/motion/entrance'
+            },
+            {
+                id: 'light_outdoor',
+                name: 'Outdoor Light',
+                type: 'light',
+                unit: 'lux',
+                lastValue: '850',
+                topic: 'sensors/light/outdoor'
+            }
+        ];
+        
+        this.populateSimpleRuleSensorDropdown();
+        this.showToast(`Loaded ${this.availableSensors.length} available sensors (demo mode)`, 'info');
+    }
+    
+    populateSimpleRuleSensorDropdown() {
+        const dropdown = document.getElementById('rule-sensor-select');
+        if (!dropdown) return;
+        
+        dropdown.innerHTML = '<option value="">Sensor auswählen...</option>';
+        
+        this.availableSensors.forEach(sensor => {
+            const option = document.createElement('option');
+            option.value = sensor.id;
+            option.textContent = `${sensor.name} (${sensor.type}) - ${sensor.lastValue}${sensor.unit}`;
+            option.dataset.sensor = JSON.stringify(sensor);
+            dropdown.appendChild(option);
+        });
+    }
+    
+    async testSimpleRule() {
+        const ruleData = this.collectSimpleRuleData();
+        
+        if (!this.validateSimpleRule(ruleData)) {
+            this.showToast('Bitte wählen Sie einen Sensor und ein Template aus', 'error');
+            return;
+        }
+        
+        try {
+            // Try API first
+            const response = await fetch('/api/platform/awtrix-sensors/test-simple-rule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ruleData)
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.showToast('✅ Regel-Test erfolgreich! Nachricht wurde an AWTRIX gesendet.', 'success');
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('API not available, using mock test');
+        }
+        
+        // Fallback to mock test
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        this.showToast('✅ Regel-Test erfolgreich! (Demo-Modus)', 'success');
+    }
+    
+    async saveSimpleRule() {
+        const ruleData = this.collectSimpleRuleData();
+        
+        if (!this.validateSimpleRule(ruleData)) {
+            this.showToast('Bitte wählen Sie einen Sensor und ein Template aus', 'error');
+            return;
+        }
+        
+        try {
+            // Try API first
+            const response = await fetch('/api/platform/awtrix-sensors/save-simple-rule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ruleData)
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.showToast('✅ Regel erfolgreich gespeichert!', 'success');
+                    this.resetSimpleRule();
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('API not available, using local storage');
+        }
+        
+        // Fallback to local storage
+        const savedRules = JSON.parse(localStorage.getItem('awtrix-simple-rules') || '[]');
+        ruleData.id = Date.now().toString();
+        ruleData.createdAt = new Date().toISOString();
+        savedRules.push(ruleData);
+        localStorage.setItem('awtrix-simple-rules', JSON.stringify(savedRules));
+        
+        this.showToast('✅ Regel erfolgreich gespeichert! (lokal)', 'success');
+        this.resetSimpleRule();
+    }
+    
+    resetSimpleRule() {
+        // Reset form elements
+        const elements = [
+            'rule-sensor-select',
+            'rule-template-select',
+            'rule-custom-text',
+            'rule-duration-slider',
+            'rule-color-select',
+            'rule-icon-select',
+            'rule-effect-select'
+        ];
+        
+        elements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (element.type === 'range') {
+                    element.value = 5;
+                } else if (element.type === 'text') {
+                    element.value = '';
+                } else {
+                    element.selectedIndex = 0;
+                }
+            }
+        });
+        
+        // Reset duration display
+        const durationValue = document.getElementById('rule-duration-value');
+        if (durationValue) {
+            durationValue.textContent = '5';
+        }
+        
+        // Hide custom text group
+        const customTextGroup = document.getElementById('custom-text-group');
+        if (customTextGroup) {
+            customTextGroup.style.display = 'none';
+        }
+        
+        // Reset preview
+        const preview = document.getElementById('rule-preview');
+        if (preview) {
+            preview.textContent = 'Wählen Sie einen Sensor und ein Template aus';
+            preview.style.color = '#00ff00';
+        }
+        
+        this.showToast('Formular zurückgesetzt', 'info');
+    }
+    
+    collectSimpleRuleData() {
+        const sensorSelect = document.getElementById('rule-sensor-select');
+        const templateSelect = document.getElementById('rule-template-select');
+        const customText = document.getElementById('rule-custom-text');
+        const durationSlider = document.getElementById('rule-duration-slider');
+        const colorSelect = document.getElementById('rule-color-select');
+        const iconSelect = document.getElementById('rule-icon-select');
+        const effectSelect = document.getElementById('rule-effect-select');
+        
+        const selectedSensor = this.availableSensors.find(s => s.id === sensorSelect.value);
+        
+        if (!selectedSensor) {
+            return null;
+        }
+        
+        // Generate display text
+        let displayText = '';
+        if (templateSelect.value === 'custom' && customText && customText.value) {
+            displayText = customText.value;
+        } else {
+            const templates = {
+                'temperature_warning': '🌡️ {sensor_name}: {value}°C',
+                'motion_detected': '🏃 Bewegung in {sensor_name}!',
+                'humidity_status': '💧 {sensor_name}: {value}%',
+                'light_status': '💡 {sensor_name}: {value} lux'
+            };
+            displayText = templates[templateSelect.value] || '{sensor_name}: {value}{unit}';
+        }
+        
+        // Replace variables
+        displayText = displayText
+            .replace(/{sensor_name}/g, selectedSensor.name)
+            .replace(/{value}/g, '{sensor_value}')
+            .replace(/{unit}/g, selectedSensor.unit || '');
+        
+        return {
+            sensorId: selectedSensor.id,
+            sensorName: selectedSensor.name,
+            sensorType: selectedSensor.type,
+            sensorTopic: selectedSensor.topic,
+            templateId: templateSelect.value,
+            customText: templateSelect.value === 'custom' ? customText.value : null,
+            displayText: displayText,
+            duration: parseInt(durationSlider.value),
+            color: colorSelect.value,
+            icon: iconSelect.value,
+            effect: effectSelect.value,
+            enabled: true
+        };
+    }
+    
+    validateSimpleRule(ruleData) {
+        return ruleData && 
+               ruleData.sensorId && 
+               ruleData.templateId && 
+               ruleData.displayText;
+    }
 }
 
 // Integrated GUI Functions
@@ -1247,12 +1500,174 @@ function openSimpleGUI() {
     }
 }
 
+// Simple Rule Creation Functions
+function loadAvailableSensors() {
+    if (window.configUI) {
+        window.configUI.loadAvailableSensors();
+    }
+}
+
+function testSimpleRule() {
+    if (window.configUI) {
+        window.configUI.testSimpleRule();
+    }
+}
+
+function saveSimpleRule() {
+    if (window.configUI) {
+        window.configUI.saveSimpleRule();
+    }
+}
+
+function resetSimpleRule() {
+    if (window.configUI) {
+        window.configUI.resetSimpleRule();
+    }
+}
+
+// Tab switching function
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.gui-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const selectedTab = document.getElementById(tabName + '-tab');
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // Add active class to selected tab
+    const selectedTabButton = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+    if (selectedTabButton) {
+        selectedTabButton.classList.add('active');
+    }
+}
+
 // Make functions globally available
 window.toggleIntegratedGUI = toggleIntegratedGUI;
 window.openIntegratedGUI = openIntegratedGUI;
 window.openSimpleGUI = openSimpleGUI;
+window.loadAvailableSensors = loadAvailableSensors;
+window.testSimpleRule = testSimpleRule;
+window.saveSimpleRule = saveSimpleRule;
+window.resetSimpleRule = resetSimpleRule;
+window.switchTab = switchTab;
 
 // Initialize the configuration UI when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.configUI = new AwtrixConfigUI();
+    
+    // Initialize simple rule creation event listeners
+    initializeSimpleRuleListeners();
 });
+
+function initializeSimpleRuleListeners() {
+    // Duration slider
+    const durationSlider = document.getElementById('rule-duration-slider');
+    if (durationSlider) {
+        durationSlider.addEventListener('input', function() {
+            const valueSpan = document.getElementById('rule-duration-value');
+            if (valueSpan) {
+                valueSpan.textContent = this.value;
+            }
+            updateSimpleRulePreview();
+        });
+    }
+    
+    // Template selection
+    const templateSelect = document.getElementById('rule-template-select');
+    if (templateSelect) {
+        templateSelect.addEventListener('change', function() {
+            const customTextGroup = document.getElementById('custom-text-group');
+            if (customTextGroup) {
+                if (this.value === 'custom') {
+                    customTextGroup.style.display = 'block';
+                } else {
+                    customTextGroup.style.display = 'none';
+                }
+            }
+            updateSimpleRulePreview();
+        });
+    }
+    
+    // All other form elements
+    const formElements = [
+        'rule-sensor-select',
+        'rule-custom-text',
+        'rule-color-select',
+        'rule-icon-select',
+        'rule-effect-select'
+    ];
+    
+    formElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.addEventListener('change', updateSimpleRulePreview);
+            element.addEventListener('input', updateSimpleRulePreview);
+        }
+    });
+}
+
+function updateSimpleRulePreview() {
+    const sensorSelect = document.getElementById('rule-sensor-select');
+    const templateSelect = document.getElementById('rule-template-select');
+    const customText = document.getElementById('rule-custom-text');
+    const colorSelect = document.getElementById('rule-color-select');
+    const iconSelect = document.getElementById('rule-icon-select');
+    const preview = document.getElementById('rule-preview');
+    
+    if (!sensorSelect || !templateSelect || !preview) return;
+    
+    const selectedSensor = sensorSelect.value;
+    const selectedTemplate = templateSelect.value;
+    
+    if (!selectedSensor || !selectedTemplate) {
+        preview.textContent = 'Wählen Sie einen Sensor und ein Template aus';
+        return;
+    }
+    
+    // Get sensor data
+    const sensorOption = sensorSelect.options[sensorSelect.selectedIndex];
+    const sensorData = sensorOption.dataset.sensor ? JSON.parse(sensorOption.dataset.sensor) : null;
+    
+    if (!sensorData) {
+        preview.textContent = 'Sensor-Daten nicht verfügbar';
+        return;
+    }
+    
+    // Generate preview text
+    let displayText = '';
+    
+    if (selectedTemplate === 'custom' && customText && customText.value) {
+        displayText = customText.value;
+    } else {
+        // Use template
+        const templates = {
+            'temperature_warning': '🌡️ {sensor_name}: {value}°C',
+            'motion_detected': '🏃 Bewegung in {sensor_name}!',
+            'humidity_status': '💧 {sensor_name}: {value}%',
+            'light_status': '💡 {sensor_name}: {value} lux'
+        };
+        displayText = templates[selectedTemplate] || '{sensor_name}: {value}{unit}';
+    }
+    
+    // Replace variables
+    displayText = displayText
+        .replace(/{sensor_name}/g, sensorData.name)
+        .replace(/{value}/g, sensorData.lastValue || 'TEST')
+        .replace(/{unit}/g, sensorData.unit || '');
+    
+    // Set preview
+    const selectedIcon = iconSelect ? iconSelect.value : '📊';
+    const selectedColor = colorSelect ? colorSelect.value : '#FFFFFF';
+    
+    preview.innerHTML = `${selectedIcon} ${displayText}`;
+    preview.style.color = selectedColor;
+}

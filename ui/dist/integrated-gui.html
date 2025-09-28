@@ -307,6 +307,103 @@
             content: " ⏳";
         }
 
+        /* Scanner specific styles */
+        .status-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .status-scanning { 
+            background: #ffa500; 
+            animation: pulse 1s infinite; 
+        }
+        .status-idle { background: #6c757d; }
+        .status-complete { background: #28a745; }
+        .status-error { background: #dc3545; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .quality-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .quality-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .quality-excellent { background: #28a745; }
+        .quality-good { background: #17a2b8; }
+        .quality-fair { background: #ffc107; }
+        .quality-poor { background: #dc3545; }
+
+        .filter-controls {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .no-data i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.85em;
+        }
+
         @media (max-width: 768px) {
             .gui-header h1 {
                 font-size: 2em;
@@ -360,6 +457,12 @@
                     </button>
                     <button class="gui-tab" onclick="switchTab('awtrix')">
                         <i class="fas fa-desktop"></i> AWTRIX
+                    </button>
+                    <button class="gui-tab" onclick="switchTab('rules')">
+                        <i class="fas fa-robot"></i> Regeln
+                    </button>
+                    <button class="gui-tab" onclick="switchTab('scanner')">
+                        <i class="fas fa-search"></i> Scanner
                     </button>
                     <button class="gui-tab" onclick="switchTab('rules')">
                         <i class="fas fa-robot"></i> Regeln
@@ -452,14 +555,147 @@
                 <!-- Rules Tab -->
                 <div id="rules-tab" class="tab-content">
                     <div class="section">
-                        <h3>🤖 Regel-Engine</h3>
-                        <p>Erstellen Sie Automatisierungsregeln für Ihre AWTRIX-Geräte.</p>
-                        <button class="btn" onclick="createRule()">
-                            <i class="fas fa-plus"></i> Neue Regel
-                        </button>
-                        <button class="btn btn-warning" onclick="testRules()">
-                            <i class="fas fa-flask"></i> Regeln Testen
-                        </button>
+                        <h3>🤖 Intelligente Regel-Engine</h3>
+                        <p>Konvertieren Sie MQTT-Sensoren automatisch in intelligente Regeln</p>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-success" onclick="openRuleBuilder()">
+                                <i class="fas fa-plus"></i> Regel erstellen
+                            </button>
+                            <button class="btn btn-secondary" onclick="loadRuleTemplates()">
+                                <i class="fas fa-file-alt"></i> Templates
+                            </button>
+                            <button class="btn btn-warning" onclick="testAllRules()">
+                                <i class="fas fa-flask"></i> Alle testen
+                            </button>
+                            <button class="btn" onclick="refreshRules()">
+                                <i class="fas fa-sync"></i> Aktualisieren
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📊 Regel-Statistiken</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalRulesCount">0</div>
+                                <div class="stat-label">Gesamt-Regeln</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="activeRulesCount">0</div>
+                                <div class="stat-label">Aktive Regeln</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalTriggersCount">0</div>
+                                <div class="stat-label">Auslösungen</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="ruleSensorsCount">0</div>
+                                <div class="stat-label">Sensoren</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📋 Aktive Regeln</h3>
+                        <div id="rulesList" class="sensors-grid">
+                            <div class="no-data">
+                                <i class="fas fa-robot"></i>
+                                <p>Keine Regeln erstellt. Erstellen Sie Ihre erste Regel!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scanner Tab -->
+                <div id="scanner-tab" class="tab-content">
+                    <div class="section">
+                        <h3>🔍 MQTT Sensor Scanner</h3>
+                        <p>Erweiterte Sensor-Suche und -Konfiguration über MQTT</p>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="scan-duration">Scan-Dauer (Sekunden)</label>
+                                <input type="number" id="scan-duration" value="30" min="10" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label for="quality-threshold">Qualitäts-Schwellenwert</label>
+                                <select id="quality-threshold">
+                                    <option value="0.1">Niedrig (0.1)</option>
+                                    <option value="0.3" selected>Mittel (0.3)</option>
+                                    <option value="0.5">Hoch (0.5)</option>
+                                    <option value="0.7">Sehr hoch (0.7)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="topic-patterns">Topic-Patterns</label>
+                                <select id="topic-patterns">
+                                    <option value="common">Standard</option>
+                                    <option value="homeassistant">Home Assistant</option>
+                                    <option value="tasmota">Tasmota</option>
+                                    <option value="esphome">ESPHome</option>
+                                    <option value="custom">Benutzerdefiniert</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-success" onclick="startSensorScan()">
+                                <i class="fas fa-play"></i> Scan Starten
+                            </button>
+                            <button class="btn btn-warning" onclick="stopSensorScan()">
+                                <i class="fas fa-stop"></i> Scan Stoppen
+                            </button>
+                            <button class="btn" onclick="refreshScannerResults()">
+                                <i class="fas fa-sync"></i> Aktualisieren
+                            </button>
+                        </div>
+                        
+                        <div id="scan-status" class="status-display">
+                            <div class="status-item">
+                                <span class="status-indicator" id="scan-status-indicator"></span>
+                                <strong>Status:</strong> <span id="scan-status-text">Bereit zum Scannen</span>
+                            </div>
+                            <div class="status-item">
+                                <strong>Gefundene Sensoren:</strong> <span id="scanned-sensor-count">0</span>
+                            </div>
+                            <div class="status-item">
+                                <strong>Verbleibende Zeit:</strong> <span id="scan-remaining-time">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📊 Scan-Ergebnisse</h3>
+                        <div class="filter-controls">
+                            <div class="form-group">
+                                <label for="scanner-type-filter">Sensortyp</label>
+                                <select id="scanner-type-filter" onchange="filterScannedSensors()">
+                                    <option value="">Alle Typen</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="scanner-quality-filter">Qualität</label>
+                                <select id="scanner-quality-filter" onchange="filterScannedSensors()">
+                                    <option value="">Alle Qualitäten</option>
+                                    <option value="excellent">Ausgezeichnet</option>
+                                    <option value="good">Gut</option>
+                                    <option value="fair">Mittel</option>
+                                    <option value="poor">Schlecht</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="scanner-search-filter">Suche</label>
+                                <input type="text" id="scanner-search-filter" placeholder="Sensor-Name oder Topic..." onkeyup="filterScannedSensors()">
+                            </div>
+                        </div>
+                        
+                        <div id="scanned-sensors-grid" class="sensors-grid">
+                            <div class="no-data">
+                                <i class="fas fa-search"></i>
+                                <p>Keine Sensoren gefunden. Starten Sie einen Scan.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -496,6 +732,9 @@
                 this.sensors = [];
                 this.awtrixDevices = [];
                 this.rules = [];
+                this.scannedSensors = [];
+                this.isScanning = false;
+                this.scanTimer = null;
                 this.init();
             }
 
@@ -753,6 +992,447 @@
                     toast.className = 'toast';
                 }, 3000);
             }
+
+            // Scanner Functions
+            async startSensorScan() {
+                if (this.isScanning) return;
+
+                const scanDuration = parseInt(document.getElementById('scan-duration').value);
+                const qualityThreshold = parseFloat(document.getElementById('quality-threshold').value);
+
+                this.isScanning = true;
+                this.updateScanStatus('scanning', 0, scanDuration);
+
+                try {
+                    // Simulate scan (in real implementation, this would call the actual API)
+                    const results = await this.simulateSensorScan(scanDuration, qualityThreshold);
+                    
+                    this.scannedSensors = results;
+                    this.updateScanStatus('complete', results.length, 0);
+                    this.displayScannedSensors();
+                    this.updateScannerTypeFilter();
+                    
+                    this.showToast(`Scan abgeschlossen! ${results.length} Sensoren gefunden.`, 'success');
+                    
+                } catch (error) {
+                    this.updateScanStatus('error', 0, 0);
+                    this.showToast('Scan fehlgeschlagen: ' + error.message, 'error');
+                } finally {
+                    this.isScanning = false;
+                }
+            }
+
+            async stopSensorScan() {
+                if (!this.isScanning) return;
+
+                this.isScanning = false;
+                this.updateScanStatus('idle', this.scannedSensors.length, 0);
+                this.showToast('Scan gestoppt', 'warning');
+            }
+
+            async simulateSensorScan(duration, qualityThreshold) {
+                // Simulate scanning with realistic sensor data
+                const sensorTypes = ['temperature', 'humidity', 'pressure', 'motion', 'light', 'voltage', 'current', 'power'];
+                const devices = ['living_room', 'bedroom', 'kitchen', 'bathroom', 'garage', 'garden', 'office'];
+                const manufacturers = ['Home Assistant', 'Tasmota', 'ESPHome', 'Zigbee2MQTT', 'OpenHAB'];
+                
+                const results = [];
+                const numSensors = Math.floor(Math.random() * 15) + 5; // 5-20 sensors
+                
+                for (let i = 0; i < numSensors; i++) {
+                    const type = sensorTypes[Math.floor(Math.random() * sensorTypes.length)];
+                    const device = devices[Math.floor(Math.random() * devices.length)];
+                    const manufacturer = manufacturers[Math.floor(Math.random() * manufacturers.length)];
+                    
+                    const quality = Math.random();
+                    if (quality < qualityThreshold) continue;
+                    
+                    const sensor = {
+                        topic: `sensors/${device}/${type}`,
+                        name: `${device.replace('_', ' ')} ${type}`,
+                        type: type,
+                        value: this.generateSensorValue(type),
+                        unit: this.getSensorUnit(type),
+                        timestamp: new Date(),
+                        quality: quality,
+                        metadata: {
+                            deviceId: device,
+                            location: device.replace('_', ' '),
+                            manufacturer: manufacturer
+                        }
+                    };
+                    
+                    results.push(sensor);
+                }
+                
+                // Simulate scan duration
+                await new Promise(resolve => setTimeout(resolve, Math.min(duration * 100, 2000)));
+                
+                return results.sort((a, b) => b.quality - a.quality);
+            }
+
+            generateSensorValue(type) {
+                switch (type) {
+                    case 'temperature': return (Math.random() * 30 + 10).toFixed(1);
+                    case 'humidity': return Math.floor(Math.random() * 100);
+                    case 'pressure': return (Math.random() * 200 + 900).toFixed(1);
+                    case 'motion': return Math.random() > 0.5 ? 'Bewegung' : 'Keine Bewegung';
+                    case 'light': return Math.floor(Math.random() * 1000);
+                    case 'voltage': return (Math.random() * 5 + 220).toFixed(1);
+                    case 'current': return (Math.random() * 10).toFixed(2);
+                    case 'power': return Math.floor(Math.random() * 1000);
+                    default: return Math.floor(Math.random() * 100);
+                }
+            }
+
+            getSensorUnit(type) {
+                switch (type) {
+                    case 'temperature': return '°C';
+                    case 'humidity': return '%';
+                    case 'pressure': return 'hPa';
+                    case 'motion': return '';
+                    case 'light': return 'lux';
+                    case 'voltage': return 'V';
+                    case 'current': return 'A';
+                    case 'power': return 'W';
+                    default: return '';
+                }
+            }
+
+            updateScanStatus(status, sensorCount, remainingTime) {
+                const statusIndicator = document.getElementById('scan-status-indicator');
+                const statusText = document.getElementById('scan-status-text');
+                const sensorCountElement = document.getElementById('scanned-sensor-count');
+                const remainingTimeElement = document.getElementById('scan-remaining-time');
+                
+                if (statusIndicator) statusIndicator.className = `status-indicator status-${status}`;
+                if (statusText) {
+                    let statusTextValue = '';
+                    switch (status) {
+                        case 'scanning': statusTextValue = 'Scan läuft...'; break;
+                        case 'complete': statusTextValue = 'Scan abgeschlossen'; break;
+                        case 'error': statusTextValue = 'Scan fehlgeschlagen'; break;
+                        default: statusTextValue = 'Bereit zum Scannen'; break;
+                    }
+                    statusText.textContent = statusTextValue;
+                }
+                if (sensorCountElement) sensorCountElement.textContent = sensorCount;
+                if (remainingTimeElement) remainingTimeElement.textContent = remainingTime > 0 ? `${remainingTime}s` : '-';
+            }
+
+            displayScannedSensors() {
+                const container = document.getElementById('scanned-sensors-grid');
+                if (!container) return;
+                
+                if (this.scannedSensors.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-search"></i>
+                            <p>Keine Sensoren gefunden. Starten Sie einen Scan.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.scannedSensors.map(sensor => `
+                    <div class="sensor-card">
+                        <div class="sensor-header">
+                            <h4>${sensor.name}</h4>
+                            <span class="sensor-type">${sensor.type}</span>
+                        </div>
+                        
+                        <div class="sensor-value">
+                            ${sensor.value} ${sensor.unit || ''}
+                        </div>
+                        
+                        <div class="sensor-details">
+                            <div><strong>Topic:</strong> ${sensor.topic}</div>
+                            <div><strong>Hersteller:</strong> ${sensor.metadata?.manufacturer || 'Unbekannt'}</div>
+                            <div><strong>Standort:</strong> ${sensor.metadata?.location || 'Unbekannt'}</div>
+                            <div><strong>Zeitstempel:</strong> ${sensor.timestamp.toLocaleString('de-DE')}</div>
+                        </div>
+                        
+                        <div class="quality-bar">
+                            <div class="quality-fill ${this.getQualityClass(sensor.quality)}" 
+                                 style="width: ${sensor.quality * 100}%"></div>
+                        </div>
+                        
+                        <div class="sensor-actions">
+                            <button class="btn btn-success btn-small" onclick="addScannedSensorToConfig('${sensor.topic}')">
+                                <i class="fas fa-plus"></i> Hinzufügen
+                            </button>
+                            <button class="btn btn-secondary btn-small" onclick="convertSensorToRule('${sensor.topic}')">
+                                <i class="fas fa-robot"></i> Regel erstellen
+                            </button>
+                            <button class="btn btn-small" onclick="viewScannedSensorDetails('${sensor.topic}')">
+                                <i class="fas fa-eye"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            getQualityClass(quality) {
+                if (quality >= 0.8) return 'quality-excellent';
+                if (quality >= 0.6) return 'quality-good';
+                if (quality >= 0.4) return 'quality-fair';
+                return 'quality-poor';
+            }
+
+            updateScannerTypeFilter() {
+                const typeFilter = document.getElementById('scanner-type-filter');
+                if (!typeFilter) return;
+                
+                const types = [...new Set(this.scannedSensors.map(s => s.type))].sort();
+                
+                typeFilter.innerHTML = '<option value="">Alle Typen</option>' +
+                    types.map(type => `<option value="${type}">${type}</option>`).join('');
+            }
+
+            filterScannedSensors() {
+                const typeFilter = document.getElementById('scanner-type-filter')?.value || '';
+                const qualityFilter = document.getElementById('scanner-quality-filter')?.value || '';
+                const searchFilter = document.getElementById('scanner-search-filter')?.value.toLowerCase() || '';
+
+                let filtered = this.scannedSensors.filter(sensor => {
+                    if (typeFilter && sensor.type !== typeFilter) return false;
+                    if (qualityFilter && this.getQualityClass(sensor.quality) !== `quality-${qualityFilter}`) return false;
+                    if (searchFilter && !sensor.name.toLowerCase().includes(searchFilter) && 
+                        !sensor.topic.toLowerCase().includes(searchFilter)) return false;
+                    return true;
+                });
+
+                // Update display with filtered results
+                const container = document.getElementById('scanned-sensors-grid');
+                if (!container) return;
+                
+                if (filtered.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-filter"></i>
+                            <p>Keine Sensoren entsprechen den Filterkriterien.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = filtered.map(sensor => `
+                    <div class="sensor-card">
+                        <div class="sensor-header">
+                            <h4>${sensor.name}</h4>
+                            <span class="sensor-type">${sensor.type}</span>
+                        </div>
+                        
+                        <div class="sensor-value">
+                            ${sensor.value} ${sensor.unit || ''}
+                        </div>
+                        
+                        <div class="sensor-details">
+                            <div><strong>Topic:</strong> ${sensor.topic}</div>
+                            <div><strong>Hersteller:</strong> ${sensor.metadata?.manufacturer || 'Unbekannt'}</div>
+                            <div><strong>Standort:</strong> ${sensor.metadata?.location || 'Unbekannt'}</div>
+                            <div><strong>Zeitstempel:</strong> ${sensor.timestamp.toLocaleString('de-DE')}</div>
+                        </div>
+                        
+                        <div class="quality-bar">
+                            <div class="quality-fill ${this.getQualityClass(sensor.quality)}" 
+                                 style="width: ${sensor.quality * 100}%"></div>
+                        </div>
+                        
+                        <div class="sensor-actions">
+                            <button class="btn btn-success btn-small" onclick="addScannedSensorToConfig('${sensor.topic}')">
+                                <i class="fas fa-plus"></i> Hinzufügen
+                            </button>
+                            <button class="btn btn-secondary btn-small" onclick="convertSensorToRule('${sensor.topic}')">
+                                <i class="fas fa-robot"></i> Regel erstellen
+                            </button>
+                            <button class="btn btn-small" onclick="viewScannedSensorDetails('${sensor.topic}')">
+                                <i class="fas fa-eye"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            refreshScannerResults() {
+                this.displayScannedSensors();
+                this.updateScannerTypeFilter();
+                this.showToast('Scanner-Ergebnisse aktualisiert', 'info');
+            }
+
+            // Rule Engine Functions
+            async loadRules() {
+                try {
+                    // Simulate loading rules
+                    this.rules = [
+                        {
+                            id: 'rule_1',
+                            name: 'Wohnzimmer Temperatur Warnung',
+                            description: 'Warnt bei hoher Temperatur im Wohnzimmer',
+                            sensorTopic: 'sensors/living_room/temperature',
+                            sensorName: 'Wohnzimmer Temperatur',
+                            sensorType: 'temperature',
+                            enabled: true,
+                            priority: 5,
+                            triggerCount: 12,
+                            lastTriggered: new Date()
+                        },
+                        {
+                            id: 'rule_2',
+                            name: 'Schlafzimmer Luftfeuchtigkeit',
+                            description: 'Zeigt Luftfeuchtigkeit im Schlafzimmer an',
+                            sensorTopic: 'sensors/bedroom/humidity',
+                            sensorName: 'Schlafzimmer Luftfeuchtigkeit',
+                            sensorType: 'humidity',
+                            enabled: true,
+                            priority: 3,
+                            triggerCount: 45,
+                            lastTriggered: new Date()
+                        }
+                    ];
+
+                    this.displayRules();
+                    this.updateRuleStatistics();
+                } catch (error) {
+                    this.showToast('Fehler beim Laden der Regeln: ' + error.message, 'error');
+                }
+            }
+
+            displayRules() {
+                const container = document.getElementById('rulesList');
+                if (!container) return;
+                
+                if (this.rules.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-robot"></i>
+                            <p>Keine Regeln erstellt. Erstellen Sie Ihre erste Regel!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.rules.map(rule => `
+                    <div class="sensor-card">
+                        <div class="sensor-header">
+                            <h4>${rule.name}</h4>
+                            <span class="sensor-type ${rule.enabled ? 'enabled' : 'disabled'}">
+                                ${rule.enabled ? 'Aktiv' : 'Inaktiv'}
+                            </span>
+                        </div>
+                        
+                        <div class="sensor-value">
+                            ${rule.triggerCount} Auslösungen
+                        </div>
+                        
+                        <div class="sensor-details">
+                            <div><strong>Sensor:</strong> ${rule.sensorName}</div>
+                            <div><strong>Typ:</strong> ${rule.sensorType}</div>
+                            <div><strong>Priorität:</strong> ${rule.priority}</div>
+                            <div><strong>Letzte Auslösung:</strong> ${rule.lastTriggered ? rule.lastTriggered.toLocaleString('de-DE') : 'Nie'}</div>
+                        </div>
+                        
+                        <div class="sensor-actions">
+                            <button class="btn btn-success btn-small" onclick="gui.editRule('${rule.id}')">
+                                <i class="fas fa-edit"></i> Bearbeiten
+                            </button>
+                            <button class="btn ${rule.enabled ? 'btn-warning' : 'btn-secondary'} btn-small" onclick="gui.toggleRule('${rule.id}')">
+                                <i class="fas fa-${rule.enabled ? 'pause' : 'play'}"></i> ${rule.enabled ? 'Deaktivieren' : 'Aktivieren'}
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="gui.deleteRule('${rule.id}')">
+                                <i class="fas fa-trash"></i> Löschen
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateRuleStatistics() {
+                const totalRules = this.rules.length;
+                const activeRules = this.rules.filter(r => r.enabled).length;
+                const totalTriggers = this.rules.reduce((sum, r) => sum + r.triggerCount, 0);
+                const ruleSensors = new Set(this.rules.map(r => r.sensorTopic)).size;
+
+                document.getElementById('totalRulesCount').textContent = totalRules;
+                document.getElementById('activeRulesCount').textContent = activeRules;
+                document.getElementById('totalTriggersCount').textContent = totalTriggers;
+                document.getElementById('ruleSensorsCount').textContent = ruleSensors;
+            }
+
+            openRuleBuilder() {
+                // Open rule builder in new window
+                window.open('rule-builder-gui.html', 'ruleBuilder', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+            }
+
+            loadRuleTemplates() {
+                this.showToast('Lade Regel-Templates...', 'info');
+                // In real implementation, this would load templates from the API
+            }
+
+            testAllRules() {
+                this.showToast('Teste alle Regeln...', 'info');
+                // In real implementation, this would test all rules
+            }
+
+            refreshRules() {
+                this.loadRules();
+                this.showToast('Regeln aktualisiert', 'info');
+            }
+
+            editRule(ruleId) {
+                const rule = this.rules.find(r => r.id === ruleId);
+                if (rule) {
+                    this.showToast(`Bearbeite Regel: ${rule.name}`, 'info');
+                    // In real implementation, this would open an edit dialog
+                }
+            }
+
+            toggleRule(ruleId) {
+                const rule = this.rules.find(r => r.id === ruleId);
+                if (rule) {
+                    rule.enabled = !rule.enabled;
+                    this.displayRules();
+                    this.updateRuleStatistics();
+                    this.showToast(`Regel ${rule.enabled ? 'aktiviert' : 'deaktiviert'}: ${rule.name}`, 'success');
+                }
+            }
+
+            deleteRule(ruleId) {
+                if (confirm('Möchten Sie diese Regel wirklich löschen?')) {
+                    this.rules = this.rules.filter(r => r.id !== ruleId);
+                    this.displayRules();
+                    this.updateRuleStatistics();
+                    this.showToast('Regel gelöscht', 'info');
+                }
+            }
+
+            // Method to convert scanned sensor to rule
+            convertSensorToRule(sensorTopic, templateId) {
+                const sensor = this.scannedSensors.find(s => s.topic === sensorTopic);
+                if (!sensor) {
+                    this.showToast('Sensor nicht gefunden', 'error');
+                    return;
+                }
+
+                // Create rule from sensor
+                const rule = {
+                    id: `rule_${Date.now()}`,
+                    name: `Auto Rule - ${sensor.name}`,
+                    description: `Automatisch erstellte Regel für ${sensor.name}`,
+                    sensorTopic: sensor.topic,
+                    sensorName: sensor.name,
+                    sensorType: sensor.type,
+                    enabled: true,
+                    priority: 5,
+                    triggerCount: 0,
+                    lastTriggered: null
+                };
+
+                this.rules.push(rule);
+                this.displayRules();
+                this.updateRuleStatistics();
+                this.showToast(`Regel erstellt für: ${sensor.name}`, 'success');
+            }
         }
 
         // Global functions for tab switching
@@ -776,6 +1456,35 @@
         function createRule() { gui.createRule(); }
         function testRules() { gui.testRules(); }
         function runAllTests() { gui.runAllTests(); }
+        
+        // Scanner functions
+        function startSensorScan() { gui.startSensorScan(); }
+        function stopSensorScan() { gui.stopSensorScan(); }
+        function refreshScannerResults() { gui.refreshScannerResults(); }
+        function filterScannedSensors() { gui.filterScannedSensors(); }
+        function addScannedSensorToConfig(topic) { 
+            const sensor = gui.scannedSensors.find(s => s.topic === topic);
+            if (sensor) {
+                gui.showToast(`Sensor "${sensor.name}" wurde zur Konfiguration hinzugefügt!`, 'success');
+                // In real implementation, this would call the API to add the sensor
+            }
+        }
+        function viewScannedSensorDetails(topic) { 
+            const sensor = gui.scannedSensors.find(s => s.topic === topic);
+            if (sensor) {
+                alert(`Sensor-Details:\n\nName: ${sensor.name}\nTyp: ${sensor.type}\nWert: ${sensor.value} ${sensor.unit || ''}\nTopic: ${sensor.topic}\nQualität: ${(sensor.quality * 100).toFixed(1)}%\nHersteller: ${sensor.metadata?.manufacturer || 'Unbekannt'}\nStandort: ${sensor.metadata?.location || 'Unbekannt'}`);
+            }
+        }
+        
+        // Rule Engine functions
+        function openRuleBuilder() { gui.openRuleBuilder(); }
+        function loadRuleTemplates() { gui.loadRuleTemplates(); }
+        function testAllRules() { gui.testAllRules(); }
+        function refreshRules() { gui.refreshRules(); }
+        function editRule(ruleId) { gui.editRule(ruleId); }
+        function toggleRule(ruleId) { gui.toggleRule(ruleId); }
+        function deleteRule(ruleId) { gui.deleteRule(ruleId); }
+        function convertSensorToRule(sensorTopic, templateId) { gui.convertSensorToRule(sensorTopic, templateId); }
 
         // Initialize GUI
         let gui;

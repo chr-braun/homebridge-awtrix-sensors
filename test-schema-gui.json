@@ -1,0 +1,18 @@
+{
+  "platformName": "AWTRIX Sensors",
+  "mqttHost": "192.168.178.29",
+  "mqttPort": 1883,
+  "mqttUsername": "biber",
+  "mqttPassword": "2203801826",
+  "mqttTopicPrefix": "awtrix_0b86f0",
+  "awtrixIp": "192.168.178.151",
+  "awtrixPort": 80,
+  "scanRange": "192.168.178",
+  "enableSensorDiscovery": true,
+  "scanInterval": 5,
+  "topicPatterns": [
+    "sensors/+/temperature",
+    "sensors/+/humidity",
+    "sensors/+/pressure"
+  ]
+}

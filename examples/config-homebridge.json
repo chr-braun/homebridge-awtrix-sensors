@@ -1,0 +1,56 @@
+{
+  "bridge": {
+    "name": "Homebridge AWTRIX",
+    "username": "0E:77:05:94:5E:9F",
+    "port": 41223,
+    "pin": "031-45-154"
+  },
+  "platforms": [
+    {
+      "platform": "AwtrixSensors",
+      "name": "AWTRIX Sensors",
+      "mqtt": {
+        "host": "192.168.178.29",
+        "port": 1883,
+        "username": "biber",
+        "password": "2203801826",
+        "topicPrefix": "awtrix_0b86f0"
+      },
+      "awtrix": {
+        "ip": "192.168.178.151",
+        "port": 80,
+        "scanRange": "192.168.178"
+      },
+      "sensors": [
+        {
+          "id": "temperature_1",
+          "name": "Wohnzimmer Temperatur",
+          "type": "temperature",
+          "unit": "°C",
+          "enabled": true,
+          "priority": "high",
+          "displayDuration": 10
+        },
+        {
+          "id": "humidity_1",
+          "name": "Schlafzimmer Luftfeuchtigkeit",
+          "type": "humidity",
+          "unit": "%",
+          "enabled": true,
+          "priority": "medium",
+          "displayDuration": 8
+        },
+        {
+          "id": "motion_1",
+          "name": "Eingang Bewegung",
+          "type": "motion",
+          "unit": "",
+          "enabled": true,
+          "priority": "high",
+          "displayDuration": 5
+        }
+      ]
+    }
+  ],
+  "accessories": []
+}

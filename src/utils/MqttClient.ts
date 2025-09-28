@@ -131,4 +131,23 @@ export class MqttClient {
   getConnectionStatus(): string {
     return this.isConnected ? 'connected' : 'disconnected';
   }
+
+  async publish(topic: string, message: string): Promise<boolean> {
+    if (!this.client || !this.isConnected) {
+      console.error('❌ MQTT client not connected');
+      return false;
+    }
+
+    return new Promise((resolve) => {
+      this.client!.publish(topic, message, (error) => {
+        if (error) {
+          console.error('❌ Failed to publish MQTT message:', error);
+          resolve(false);
+        } else {
+          console.log(`📤 Published to ${topic}: ${message}`);
+          resolve(true);
+        }
+      });
+    });
+  }
 }

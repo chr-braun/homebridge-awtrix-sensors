@@ -34,6 +34,9 @@ export interface SensorConfig {
   entity_id?: string;
   homekit_service?: string;
   homekit_characteristic?: string;
+  mqttTopic?: string;
+  enabled?: boolean;
+  displaySlot?: number;
 }
 
 export interface AwtrixMessage {
