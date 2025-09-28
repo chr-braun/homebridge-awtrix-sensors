@@ -2096,14 +2096,11 @@ function onSensorSelected() {
         sensorsList.style.display = 'grid';
         noSensors.style.display = 'none';
         
-        // Clear existing content
-        sensorsList.innerHTML = '';
+        // Store original sensors for filtering
+        this.allSensors = [...this.discoveredSensors];
         
-        // Create sensor cards
-        this.discoveredSensors.forEach((sensor, index) => {
-            const sensorCard = this.createSensorCard(sensor, index);
-            sensorsList.appendChild(sensorCard);
-        });
+        // Apply current filters
+        this.filterSensors();
     }
 
     // Create sensor card element
@@ -2183,6 +2180,133 @@ function onSensorSelected() {
         this.showToast(`${this.discoveredSensors.length} Sensoren gespeichert!`, 'success');
     }
 
+    // Filter sensors based on search criteria
+    filterSensors() {
+        const searchInput = document.getElementById('sensor-search-input');
+        const typeFilter = document.getElementById('type-filter');
+        const qualityFilter = document.getElementById('quality-filter');
+        const clearBtn = document.getElementById('clear-search-btn');
+        
+        if (!searchInput || !typeFilter || !qualityFilter || !clearBtn) return;
+        
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const selectedType = typeFilter.value;
+        const selectedQuality = qualityFilter.value;
+        
+        // Show/hide clear button
+        if (searchTerm || selectedType || selectedQuality) {
+            clearBtn.style.display = 'block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+        
+        // Filter sensors
+        const filteredSensors = this.allSensors.filter(sensor => {
+            // Text search
+            const matchesSearch = !searchTerm || 
+                sensor.name.toLowerCase().includes(searchTerm) ||
+                sensor.topic.toLowerCase().includes(searchTerm) ||
+                sensor.type.toLowerCase().includes(searchTerm) ||
+                sensor.value.toLowerCase().includes(searchTerm);
+            
+            // Type filter
+            const matchesType = !selectedType || sensor.type === selectedType;
+            
+            // Quality filter
+            let matchesQuality = true;
+            if (selectedQuality) {
+                const [min, max] = selectedQuality.split('-').map(Number);
+                matchesQuality = sensor.quality >= min && sensor.quality <= max;
+            }
+            
+            return matchesSearch && matchesType && matchesQuality;
+        });
+        
+        // Update displayed sensors
+        this.displayFilteredSensors(filteredSensors);
+        
+        // Update search results info
+        this.updateSearchResultsInfo(filteredSensors.length);
+    }
+
+    // Display filtered sensors
+    displayFilteredSensors(sensors) {
+        const sensorsList = document.getElementById('sensors-list');
+        const noSensors = document.getElementById('no-sensors');
+        
+        if (!sensorsList || !noSensors) return;
+        
+        // Clear existing content
+        sensorsList.innerHTML = '';
+        
+        if (sensors.length === 0) {
+            sensorsList.style.display = 'none';
+            noSensors.style.display = 'block';
+            noSensors.innerHTML = `
+                <i class="fas fa-search"></i>
+                <p>Keine Sensoren gefunden, die den Suchkriterien entsprechen.</p>
+            `;
+            return;
+        }
+        
+        sensorsList.style.display = 'grid';
+        noSensors.style.display = 'none';
+        
+        // Create sensor cards
+        sensors.forEach((sensor, index) => {
+            const originalIndex = this.allSensors.findIndex(s => s === sensor);
+            const sensorCard = this.createSensorCard(sensor, originalIndex);
+            sensorsList.appendChild(sensorCard);
+        });
+    }
+
+    // Update search results info
+    updateSearchResultsInfo(count) {
+        let resultsInfo = document.getElementById('search-results-info');
+        
+        if (!resultsInfo) {
+            // Create results info element
+            resultsInfo = document.createElement('div');
+            resultsInfo.id = 'search-results-info';
+            resultsInfo.className = 'search-results-info';
+            
+            const sensorsList = document.getElementById('sensors-list');
+            if (sensorsList && sensorsList.parentNode) {
+                sensorsList.parentNode.insertBefore(resultsInfo, sensorsList);
+            }
+        }
+        
+        const totalSensors = this.allSensors.length;
+        const isFiltered = count < totalSensors;
+        
+        resultsInfo.innerHTML = `
+            <span class="search-results-count">
+                ${count} von ${totalSensors} Sensoren ${isFiltered ? 'angezeigt' : 'verfügbar'}
+            </span>
+            ${isFiltered ? `
+                <button class="clear-filters-btn" onclick="clearSearch()">
+                    Filter zurücksetzen
+                </button>
+            ` : ''}
+        `;
+    }
+
+    // Clear search and filters
+    clearSearch() {
+        const searchInput = document.getElementById('sensor-search-input');
+        const typeFilter = document.getElementById('type-filter');
+        const qualityFilter = document.getElementById('quality-filter');
+        const clearBtn = document.getElementById('clear-search-btn');
+        
+        if (searchInput) searchInput.value = '';
+        if (typeFilter) typeFilter.value = '';
+        if (qualityFilter) qualityFilter.value = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        
+        // Reset to show all sensors
+        this.filterSensors();
+    }
+
 }
 
 // Global functions for HTML onclick handlers
@@ -2207,6 +2331,18 @@ function refreshSensors() {
 function saveSensors() {
     if (window.awtrixConfigUI) {
         window.awtrixConfigUI.saveSensors();
+    }
+}
+
+function filterSensors() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.filterSensors();
+    }
+}
+
+function clearSearch() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.clearSearch();
     }
 }
 
