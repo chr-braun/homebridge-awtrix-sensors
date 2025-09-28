@@ -51,6 +51,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1-2] - 2025-09-28
+
+### Fixed
+- Fixed Homebridge plugin configuration for GUI installation
+- Added proper platform registration in package.json
+- Enhanced plugin discovery for Homebridge Config UI X
+
 ## [1.0.1-1] - 2025-09-28
 
 ### Fixed
