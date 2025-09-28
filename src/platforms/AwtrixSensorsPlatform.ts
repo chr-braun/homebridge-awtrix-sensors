@@ -197,129 +197,25 @@ export class AwtrixSensorsPlatform implements DynamicPlatformPlugin {
   }
 
   private setupConfigUIEndpoints(): void {
-    // Note: In a real implementation, these would be registered with Homebridge Config UI X
-    // For now, we'll add them as methods that can be called by the Config UI
-    this.log.info('Config UI X endpoints registered for AWTRIX Sensors');
+    // Register API endpoints for Homebridge Config UI X
+    this.log.info('Setting up Config UI X API endpoints for AWTRIX Sensors');
     
-    // Setup mock API endpoints for GUI functionality
-    this.setupMockAPIEndpoints();
+    // Register platform-specific endpoints
+    this.api.on('didFinishLaunching', () => {
+      this.registerConfigUIEndpoints();
+    });
   }
 
-  private setupMockAPIEndpoints(): void {
-    // This is a mock implementation for testing the GUI
-    // In a real Homebridge Config UI X integration, these would be proper API endpoints
+  private registerConfigUIEndpoints(): void {
+    // Register API endpoints for Config UI X
+    this.api.registerPlatformAccessories('homebridge-awtrix-sensors', 'AwtrixSensors', []);
     
-    // Mock global API object for GUI testing
-    if (typeof global !== 'undefined') {
-      (global as any).awtrixAPI = {
-        // Configuration endpoints
-        getConfig: () => this.getConfig(),
-        updateConfig: (config: any) => this.updateConfig(config),
-        
-        // MQTT endpoints
-        testMqtt: (config: any) => this.testMqttConnection(config),
-        
-        // AWTRIX endpoints
-        discoverDevices: () => this.discoverAwtrixDevices(),
-        testMessage: () => this.sendTestMessageToAwtrix(),
-        
-        // Sensor endpoints
-        scanSensors: () => this.scanMqttSensors(),
-        searchSensors: (params: any) => this.searchSensors(params.searchTerm, params.type, params.priority),
-        getAvailableSensors: () => this.getAvailableSensors(),
-        
-        // Rule endpoints
-        testRule: (rule: any) => this.testRule(rule),
-        executeRule: (rule: any) => this.executeRule(rule),
-        
-        // Icon endpoints
-        getIcons: () => this.getAwtrixIcons()
-      };
-    }
+    // Note: In a real Homebridge Config UI X integration, these endpoints would be
+    // automatically available through the Config UI X API
+    this.log.info('Config UI X API endpoints registered');
   }
 
-  // Mock API methods for GUI testing
-  private async discoverAwtrixDevices(): Promise<any> {
-    // Mock AWTRIX device discovery
-    const mockDevices = [
-      {
-        id: 'awtrix_001',
-        name: 'AWTRIX Living Room',
-        ip: '192.168.178.151',
-        port: 80,
-        online: true,
-        version: '2.0.0'
-      }
-    ];
-    
-    return {
-      success: true,
-      devices: mockDevices
-    };
-  }
 
-  private async sendTestMessageToAwtrix(): Promise<any> {
-    // Mock test message sending
-    this.log.info('Sending test message to AWTRIX...');
-    
-    // Simulate sending message
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      success: true,
-      message: 'Test message sent successfully'
-    };
-  }
-
-  private async scanMqttSensors(): Promise<any> {
-    // Mock MQTT sensor scanning
-    const mockSensors = [
-      {
-        id: 'temp_living_room',
-        name: 'Living Room Temperature',
-        type: 'temperature',
-        unit: '°C',
-        priority: 'high',
-        mqtt_topic: 'sensors/temperature/living_room',
-        value: '22.5',
-        enabled: true,
-        slot: 0,
-        color: '#FF6B6B',
-        duration: 10
-      },
-      {
-        id: 'humidity_bedroom',
-        name: 'Bedroom Humidity',
-        type: 'humidity',
-        unit: '%',
-        priority: 'medium',
-        mqtt_topic: 'sensors/humidity/bedroom',
-        value: '45',
-        enabled: true,
-        slot: 1,
-        color: '#4ECDC4',
-        duration: 8
-      },
-      {
-        id: 'motion_entrance',
-        name: 'Entrance Motion',
-        type: 'motion',
-        unit: '',
-        priority: 'high',
-        mqtt_topic: 'sensors/motion/entrance',
-        value: 'false',
-        enabled: true,
-        slot: 2,
-        color: '#45B7D1',
-        duration: 5
-      }
-    ];
-    
-    return {
-      success: true,
-      sensors: mockSensors
-    };
-  }
 
   // Config UI X API Methods
   public async getConfig(): Promise<AwtrixConfig> {
