@@ -51,6 +51,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2025-09-28
+
+### Added
+- Enhanced GUI with real AWTRIX device discovery
+- Icon browser with 25+ pre-defined AWTRIX icons
+- Message composer with live preview functionality
+- Real-time MQTT communication testing
+- Improved error handling and user feedback
+- Category-based icon filtering and search
+- Enhanced UI/UX with modern design elements
+
+### Fixed
+- Improved network discovery reliability
+- Better error messages and user notifications
+- Enhanced socket.io communication stability
+
+### Technical Improvements
+- Real network scanning instead of mock data
+- Live icon database integration
+- Improved responsive design for mobile devices
+- Better modal and form handling
+
 ## [Unreleased]
 
 ### Planned Features
