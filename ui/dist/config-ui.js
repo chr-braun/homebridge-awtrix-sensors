@@ -38,6 +38,32 @@ class AwtrixConfigUI {
         this.currentStep = 1;
         this.updateProgress();
         this.showStep(1);
+        
+        // Debug: Fülle Dropdown sofort mit Testdaten
+        this.loadTestSensors();
+    }
+    
+    loadTestSensors() {
+        const sensorSelect = document.getElementById("assistant-sensor-select");
+        if (!sensorSelect) return;
+        
+        const testSensors = [
+            { id: "test_temp", name: "Test Temperatur", type: "temperature", lastValue: "22.5", unit: "°C" },
+            { id: "test_humidity", name: "Test Luftfeuchtigkeit", type: "humidity", lastValue: "65", unit: "%" },
+            { id: "test_motion", name: "Test Bewegung", type: "motion", lastValue: "1", unit: "" }
+        ];
+        
+        sensorSelect.innerHTML = "<option value="">Sensor auswählen...</option>";
+        testSensors.forEach(sensor => {
+            const option = document.createElement("option");
+            option.value = sensor.id;
+            option.textContent = `${sensor.name} (${Math.round(parseFloat(sensor.lastValue))}${sensor.unit})`;
+            sensorSelect.appendChild(option);
+        });
+    }
+        this.currentStep = 1;
+        this.updateProgress();
+        this.showStep(1);
     }
 
     switchTab(tabName) {
