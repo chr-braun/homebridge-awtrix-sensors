@@ -1,0 +1,77 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+  "platforms": [
+    {
+      "platform": "AwtrixSensors",
+      "name": "AWTRIX MQTT Platform",
+      "mqtt": {
+        "host": "192.168.1.100",
+        "port": 1883,
+        "username": "your_mqtt_username",
+        "password": "your_mqtt_password",
+        "topicPrefix": "awtrix_0b86f0"
+      },
+      "awtrix": {
+        "ip": "192.168.1.151",
+        "port": 80,
+        "mqtt_topic": "awtrix_0b86f0/notify"
+      },
+      "sensors": {
+        "living_room_temperature": {
+          "name": "Wohnzimmer",
+          "type": "temperature",
+          "unit": "°C",
+          "slot": 0,
+          "color": "#FF6B35",
+          "icon": 2422,
+          "effect": "scroll",
+          "duration": 15
+        },
+        "bedroom_humidity": {
+          "name": "Schlafzimmer",
+          "type": "humidity",
+          "unit": "%",
+          "slot": 1,
+          "color": "#00A3FF",
+          "icon": 51658,
+          "effect": "fade",
+          "duration": 10
+        },
+        "front_door_motion": {
+          "name": "Eingang",
+          "type": "motion",
+          "slot": 2,
+          "color": "#00FF00",
+          "icon": 2313,
+          "effect": "blink",
+          "duration": 5
+        },
+        "kitchen_light": {
+          "name": "Küche",
+          "type": "light",
+          "unit": "lux",
+          "slot": 3,
+          "color": "#FFD700",
+          "icon": 2400,
+          "effect": "scroll",
+          "duration": 8
+        },
+        "weather_pressure": {
+          "name": "Luftdruck",
+          "type": "pressure",
+          "unit": "hPa",
+          "slot": 4,
+          "color": "#9370DB",
+          "icon": 2422,
+          "effect": "fade",
+          "duration": 12
+        }
+      }
+    }
+  ]
+}

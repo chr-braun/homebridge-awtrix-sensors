@@ -1,0 +1,55 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="#1a1a1a" stroke="#00ff00" stroke-width="8"/>
+  
+  <!-- AWTRIX Matrix representation -->
+  <rect x="64" y="80" width="128" height="32" fill="#00ff00" rx="4"/>
+  <rect x="64" y="120" width="128" height="32" fill="#00a3ff" rx="4"/>
+  <rect x="64" y="160" width="128" height="32" fill="#ff6b35" rx="4"/>
+  
+  <!-- LED dots pattern -->
+  <circle cx="80" cy="96" r="2" fill="#000"/>
+  <circle cx="96" cy="96" r="2" fill="#000"/>
+  <circle cx="112" cy="96" r="2" fill="#000"/>
+  <circle cx="128" cy="96" r="2" fill="#000"/>
+  <circle cx="144" cy="96" r="2" fill="#000"/>
+  <circle cx="160" cy="96" r="2" fill="#000"/>
+  <circle cx="176" cy="96" r="2" fill="#000"/>
+  
+  <circle cx="80" cy="136" r="2" fill="#000"/>
+  <circle cx="96" cy="136" r="2" fill="#000"/>
+  <circle cx="112" cy="136" r="2" fill="#000"/>
+  <circle cx="128" cy="136" r="2" fill="#000"/>
+  <circle cx="144" cy="136" r="2" fill="#000"/>
+  <circle cx="160" cy="136" r="2" fill="#000"/>
+  <circle cx="176" cy="136" r="2" fill="#000"/>
+  
+  <circle cx="80" cy="176" r="2" fill="#000"/>
+  <circle cx="96" cy="176" r="2" fill="#000"/>
+  <circle cx="112" cy="176" r="2" fill="#000"/>
+  <circle cx="128" cy="176" r="2" fill="#000"/>
+  <circle cx="144" cy="176" r="2" fill="#000"/>
+  <circle cx="160" cy="176" r="2" fill="#000"/>
+  <circle cx="176" cy="176" r="2" fill="#000"/>
+  
+  <!-- HomeKit symbol -->
+  <path d="M128 40 L140 52 L140 80 L116 80 L116 52 Z" fill="#00ff00"/>
+  <path d="M128 40 L140 52 L140 80 L116 80 L116 52 Z" fill="none" stroke="#00ff00" stroke-width="2"/>
+  
+  <!-- MQTT waves -->
+  <path d="M40 200 Q50 190 60 200 Q70 210 80 200" stroke="#00a3ff" stroke-width="3" fill="none"/>
+  <path d="M40 220 Q50 210 60 220 Q70 230 80 220" stroke="#00a3ff" stroke-width="3" fill="none"/>
+  
+  <!-- Sensor icons -->
+  <circle cx="200" cy="100" r="12" fill="#ff6b35"/>
+  <circle cx="200" cy="100" r="8" fill="#fff"/>
+  <text x="200" y="105" text-anchor="middle" font-family="Arial" font-size="8" fill="#000">T</text>
+  
+  <circle cx="200" cy="140" r="12" fill="#00a3ff"/>
+  <circle cx="200" cy="140" r="8" fill="#fff"/>
+  <text x="200" y="145" text-anchor="middle" font-family="Arial" font-size="8" fill="#000">H</text>
+  
+  <circle cx="200" cy="180" r="12" fill="#00ff00"/>
+  <circle cx="200" cy="180" r="8" fill="#fff"/>
+  <text x="200" y="185" text-anchor="middle" font-family="Arial" font-size="8" fill="#000">M</text>
+</svg>
