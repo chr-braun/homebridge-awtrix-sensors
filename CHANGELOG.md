@@ -51,6 +51,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1-1] - 2025-09-28
+
+### Fixed
+- Enhanced configuration validation with detailed debug logging
+- Improved error messages for missing configuration sections
+- Better debugging output for troubleshooting config issues
+
 ## [1.0.1] - 2025-09-28
 
 ### Added

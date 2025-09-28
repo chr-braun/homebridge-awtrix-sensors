@@ -45,23 +45,29 @@ export class AwtrixSensorsPlatform implements DynamicPlatformPlugin {
   }
 
   private validateConfig(): boolean {
+    this.log.debug('Validating configuration:', JSON.stringify(this.config, null, 2));
+    
     const awtrixConfig = this.config as AwtrixConfig;
     
     if (!awtrixConfig.mqtt || !awtrixConfig.awtrix) {
       this.log.error('Missing required configuration: mqtt or awtrix');
+      this.log.error('Current config keys:', Object.keys(awtrixConfig));
       return false;
     }
 
     if (!awtrixConfig.mqtt.host || !awtrixConfig.mqtt.port || !awtrixConfig.mqtt.username || !awtrixConfig.mqtt.password) {
       this.log.error('Missing required MQTT configuration');
+      this.log.error('MQTT config:', awtrixConfig.mqtt);
       return false;
     }
 
     if (!awtrixConfig.awtrix.ip || !awtrixConfig.awtrix.port) {
       this.log.error('Missing required AWTRIX configuration');
+      this.log.error('AWTRIX config:', awtrixConfig.awtrix);
       return false;
     }
 
+    this.log.info('✅ Configuration validation passed');
     return true;
   }
 
