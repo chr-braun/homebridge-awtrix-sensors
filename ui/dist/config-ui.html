@@ -177,15 +177,29 @@
                             <div class="rule-step">
                                 <h4>1️⃣ Sensor auswählen</h4>
                                 <div class="form-group">
-                                    <label for="rule-sensor-select">Verfügbare Sensoren:</label>
-                                    <div class="sensor-dropdown-container">
-                                        <select id="rule-sensor-select" class="form-control" onchange="onSensorSelected()">
-                                            <option value="">Sensor auswählen...</option>
-                                        </select>
-                                        <button class="btn btn-secondary btn-sm" onclick="loadAvailableSensors()" title="Sensoren aktualisieren">
-                                            <i class="fas fa-sync"></i>
-                                        </button>
+                                    <div class="sensor-selection-header">
+                                        <label>Verfügbare Sensoren:</label>
+                                        <div class="sensor-controls">
+                                            <div class="search-container">
+                                                <input type="text" id="sensor-search" class="form-control" placeholder="Sensoren suchen..." oninput="filterSensors()">
+                                                <i class="fas fa-search search-icon"></i>
+                                            </div>
+                                            <button class="btn btn-secondary btn-sm" onclick="loadAvailableSensors()" title="Sensoren aktualisieren">
+                                                <i class="fas fa-sync"></i>
+                                            </button>
+                                        </div>
                                     </div>
+                                    
+                                    <!-- Sensor Cards Grid -->
+                                    <div id="sensor-cards-grid" class="sensor-cards-grid">
+                                        <!-- Sensoren werden hier als Karten angezeigt -->
+                                    </div>
+                                    
+                                    <!-- Fallback Dropdown (versteckt) -->
+                                    <select id="rule-sensor-select" class="form-control" onchange="onSensorSelected()" style="display: none;">
+                                        <option value="">Sensor auswählen...</option>
+                                    </select>
+                                    
                                     <div id="sensor-info" class="sensor-info" style="display: none;">
                                         <div class="sensor-details">
                                             <div class="sensor-name"></div>

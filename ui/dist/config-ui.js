@@ -1254,6 +1254,131 @@ class AwtrixConfigUI {
     }
     
     populateSimpleRuleSensorDropdown() {
+        // Populate both dropdown (fallback) and cards grid
+        this.populateSensorCards();
+        this.populateSensorDropdown();
+    }
+    
+    populateSensorCards() {
+        const grid = document.getElementById('sensor-cards-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        this.availableSensors.forEach(sensor => {
+            const card = this.createSensorCard(sensor);
+            grid.appendChild(card);
+        });
+    }
+    
+    createSensorCard(sensor) {
+        const card = document.createElement('div');
+        card.className = 'sensor-card';
+        card.dataset.sensorId = sensor.id;
+        card.dataset.type = sensor.type;
+        card.onclick = () => this.selectSensor(sensor);
+        
+        // Round values to whole numbers
+        const roundedValue = sensor.lastValue ? Math.round(parseFloat(sensor.lastValue)) : 'N/A';
+        const quality = sensor.quality ? Math.round(sensor.quality * 100) : 0;
+        const qualityClass = quality >= 80 ? 'high' : quality >= 60 ? 'medium' : 'low';
+        
+        // Get sensor type icon
+        const typeIcons = {
+            'temperature': '🌡️',
+            'humidity': '💧',
+            'motion': '🏃',
+            'light': '💡',
+            'pressure': '📊'
+        };
+        
+        const icon = typeIcons[sensor.type] || '📊';
+        const sourceIcon = sensor.source === 'scanned' ? '🔍' : '📡';
+        
+        card.innerHTML = `
+            <div class="sensor-card-header">
+                <h4 class="sensor-name">${sensor.name}</h4>
+                <span class="sensor-type-badge">${sensor.type}</span>
+            </div>
+            
+            <div class="sensor-value-display">
+                <span class="sensor-icon">${icon}</span>
+                <span class="sensor-value">${roundedValue}</span>
+                <span class="sensor-unit">${sensor.unit || ''}</span>
+            </div>
+            
+            <div class="sensor-meta">
+                <div class="sensor-quality">
+                    <span>Qualität:</span>
+                    <div class="quality-bar">
+                        <div class="quality-fill ${qualityClass}" style="width: ${quality}%"></div>
+                    </div>
+                    <span>${quality}%</span>
+                </div>
+                <div class="sensor-source">
+                    <span>${sourceIcon}</span>
+                    <span>${sensor.source === 'scanned' ? 'Gescannt' : 'Entdeckt'}</span>
+                </div>
+            </div>
+            
+            <div class="sensor-topic">${sensor.topic}</div>
+        `;
+        
+        return card;
+    }
+    
+    selectSensor(sensor) {
+        // Remove previous selection
+        document.querySelectorAll('.sensor-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Add selection to clicked card
+        const card = document.querySelector(`[data-sensor-id="${sensor.id}"]`);
+        if (card) {
+            card.classList.add('selected');
+        }
+        
+        // Update hidden dropdown for compatibility
+        const dropdown = document.getElementById('rule-sensor-select');
+        if (dropdown) {
+            dropdown.value = sensor.id;
+        }
+        
+        // Trigger sensor selection logic
+        this.onSensorSelected(sensor);
+    }
+    
+    onSensorSelected(sensor) {
+        const sensorInfo = document.getElementById('sensor-info');
+        const templateSuggestions = document.getElementById('template-suggestions');
+        
+        if (!sensorInfo) return;
+        
+        // Update sensor info display
+        const sensorName = sensorInfo.querySelector('.sensor-name');
+        const sensorType = sensorInfo.querySelector('.sensor-type');
+        const sensorValue = sensorInfo.querySelector('.sensor-value');
+        const sensorTopic = sensorInfo.querySelector('.sensor-topic');
+        
+        if (sensorName) sensorName.textContent = `Name: ${sensor.name}`;
+        if (sensorType) sensorType.textContent = `Typ: ${sensor.type}`;
+        if (sensorValue) sensorValue.textContent = `Wert: ${Math.round(parseFloat(sensor.lastValue || 0))} ${sensor.unit || ''}`;
+        if (sensorTopic) sensorTopic.textContent = `Topic: ${sensor.topic}`;
+        
+        sensorInfo.style.display = 'block';
+        
+        // Show template suggestions based on sensor type
+        this.showTemplateSuggestions(sensor.type);
+        
+        // Auto-select appropriate template
+        this.autoSelectTemplate(sensor.type);
+        
+        // Update preview
+        this.updateSimpleRulePreview();
+    }
+    
+    populateSensorDropdown() {
         const dropdown = document.getElementById('rule-sensor-select');
         if (!dropdown) return;
         
@@ -1263,15 +1388,40 @@ class AwtrixConfigUI {
             const option = document.createElement('option');
             option.value = sensor.id;
             
-            // Create enhanced display text
+            // Create enhanced display text with rounded values
             const qualityIndicator = sensor.quality ? ` (${Math.round(sensor.quality * 100)}%)` : '';
             const sourceIndicator = sensor.source === 'scanned' ? ' 🔍' : ' 📡';
-            const valueText = sensor.lastValue ? `${sensor.lastValue}${sensor.unit || ''}` : 'Kein Wert';
+            const roundedValue = sensor.lastValue ? Math.round(parseFloat(sensor.lastValue)) : 'N/A';
+            const valueText = `${roundedValue}${sensor.unit || ''}`;
             
             option.textContent = `${sensor.name} (${sensor.type}) - ${valueText}${qualityIndicator}${sourceIndicator}`;
             option.title = `Topic: ${sensor.topic}\nTyp: ${sensor.type}\nWert: ${valueText}\nQualität: ${sensor.quality ? Math.round(sensor.quality * 100) + '%' : 'Unbekannt'}`;
             option.dataset.sensor = JSON.stringify(sensor);
             dropdown.appendChild(option);
+        });
+    }
+    
+    filterSensors() {
+        const searchInput = document.getElementById('sensor-search');
+        const cards = document.querySelectorAll('.sensor-card');
+        
+        if (!searchInput) return;
+        
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        cards.forEach(card => {
+            const sensorId = card.dataset.sensorId;
+            const sensor = this.availableSensors.find(s => s.id === sensorId);
+            
+            if (!sensor) return;
+            
+            const matches = 
+                sensor.name.toLowerCase().includes(searchTerm) ||
+                sensor.type.toLowerCase().includes(searchTerm) ||
+                sensor.topic.toLowerCase().includes(searchTerm) ||
+                (sensor.lastValue && sensor.lastValue.toString().includes(searchTerm));
+            
+            card.style.display = matches ? 'block' : 'none';
         });
     }
     
@@ -1839,20 +1989,46 @@ async function loadAvailableSensors() {
         console.log('Platform API not available, using mock data');
     }
     
-    // Enhanced mock data with more realistic sensor data
+    // Enhanced mock data with whole number values
     const mockSensors = [
-        { id: 'temp_1', name: 'Wohnzimmer Temperatur', type: 'temperature', topic: 'sensors/livingroom/temperature', lastValue: '22.5', unit: '°C', source: 'discovered', quality: 0.95 },
-        { id: 'temp_2', name: 'Küche Temperatur', type: 'temperature', topic: 'sensors/kitchen/temperature', lastValue: '24.1', unit: '°C', source: 'discovered', quality: 0.88 },
+        { id: 'temp_1', name: 'Wohnzimmer Temperatur', type: 'temperature', topic: 'sensors/livingroom/temperature', lastValue: '22', unit: '°C', source: 'discovered', quality: 0.95 },
+        { id: 'temp_2', name: 'Küche Temperatur', type: 'temperature', topic: 'sensors/kitchen/temperature', lastValue: '24', unit: '°C', source: 'discovered', quality: 0.88 },
         { id: 'hum_1', name: 'Küche Luftfeuchtigkeit', type: 'humidity', topic: 'sensors/kitchen/humidity', lastValue: '45', unit: '%', source: 'discovered', quality: 0.92 },
         { id: 'hum_2', name: 'Badezimmer Luftfeuchtigkeit', type: 'humidity', topic: 'sensors/bathroom/humidity', lastValue: '65', unit: '%', source: 'scanned', quality: 0.85 },
         { id: 'motion_1', name: 'Eingang Bewegung', type: 'motion', topic: 'sensors/entrance/motion', lastValue: '1', unit: '', source: 'scanned', quality: 0.98 },
         { id: 'motion_2', name: 'Korridor Bewegung', type: 'motion', topic: 'sensors/corridor/motion', lastValue: '0', unit: '', source: 'scanned', quality: 0.90 },
         { id: 'light_1', name: 'Schlafzimmer Licht', type: 'light', topic: 'sensors/bedroom/light', lastValue: '250', unit: 'lux', source: 'scanned', quality: 0.87 },
         { id: 'light_2', name: 'Wohnzimmer Licht', type: 'light', topic: 'sensors/livingroom/light', lastValue: '1200', unit: 'lux', source: 'scanned', quality: 0.93 },
-        { id: 'press_1', name: 'Wetter Luftdruck', type: 'pressure', topic: 'weather/pressure', lastValue: '1013.25', unit: 'hPa', source: 'discovered', quality: 0.99 },
-        { id: 'press_2', name: 'Balkon Luftdruck', type: 'pressure', topic: 'sensors/balcony/pressure', lastValue: '1012.8', unit: 'hPa', source: 'discovered', quality: 0.91 }
+        { id: 'press_1', name: 'Wetter Luftdruck', type: 'pressure', topic: 'weather/pressure', lastValue: '1013', unit: 'hPa', source: 'discovered', quality: 0.99 },
+        { id: 'press_2', name: 'Balkon Luftdruck', type: 'pressure', topic: 'sensors/balcony/pressure', lastValue: '1013', unit: 'hPa', source: 'discovered', quality: 0.91 }
     ];
     
     window.availableSensors = mockSensors;
     populateSimpleRuleSensorDropdown(mockSensors);
+}
+
+// Global functions for sensor filtering
+function filterSensors() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.filterSensors();
+    }
+}
+
+function onSensorSelected() {
+    if (window.awtrixConfigUI) {
+        const sensorSelect = document.getElementById('rule-sensor-select');
+        const selectedSensorId = sensorSelect.value;
+        if (selectedSensorId) {
+            const sensor = window.availableSensors?.find(s => s.id === selectedSensorId);
+            if (sensor) {
+                window.awtrixConfigUI.onSensorSelected(sensor);
+            }
+        }
+    }
+}
+
+function onTemplateSelected() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.onTemplateSelected();
+    }
 }
