@@ -1204,7 +1204,7 @@ class AwtrixConfigUI {
                 const result = await response.json();
                 if (result.success) {
                     this.availableSensors = result.sensors || [];
-                    this.populateSimpleRuleSensorDropdown();
+                    this.showSensorSelectionState();
                     this.showToast(`Loaded ${this.availableSensors.length} available sensors`, 'success');
                     return;
                 }
@@ -1249,11 +1249,30 @@ class AwtrixConfigUI {
             }
         ];
         
-        this.populateSimpleRuleSensorDropdown();
+        this.showSensorSelectionState();
         this.showToast(`Loaded ${this.availableSensors.length} available sensors (demo mode)`, 'info');
     }
     
     populateSimpleRuleSensorDropdown() {
+        // Show search state initially
+        this.showSensorSearchState();
+    }
+    
+    showSensorSearchState() {
+        const searchState = document.getElementById('sensor-search-state');
+        const selectionState = document.getElementById('sensor-selection-state');
+        
+        if (searchState) searchState.style.display = 'block';
+        if (selectionState) selectionState.style.display = 'none';
+    }
+    
+    showSensorSelectionState() {
+        const searchState = document.getElementById('sensor-search-state');
+        const selectionState = document.getElementById('sensor-selection-state');
+        
+        if (searchState) searchState.style.display = 'none';
+        if (selectionState) selectionState.style.display = 'block';
+        
         // Populate both dropdown (fallback) and cards grid
         this.populateSensorCards();
         this.populateSensorDropdown();
@@ -1345,8 +1364,108 @@ class AwtrixConfigUI {
             dropdown.value = sensor.id;
         }
         
+        // Show selected sensor info
+        this.showSelectedSensorInfo(sensor);
+        
         // Trigger sensor selection logic
         this.onSensorSelected(sensor);
+    }
+    
+    showSelectedSensorInfo(sensor) {
+        const selectedSensorInfo = document.getElementById('selected-sensor-info');
+        const selectedSensorDetails = document.getElementById('selected-sensor-details');
+        
+        if (!selectedSensorInfo || !selectedSensorDetails) return;
+        
+        // Round values to whole numbers
+        const roundedValue = sensor.lastValue ? Math.round(parseFloat(sensor.lastValue)) : 'N/A';
+        const quality = sensor.quality ? Math.round(sensor.quality * 100) : 0;
+        
+        // Get sensor type icon
+        const typeIcons = {
+            'temperature': '🌡️',
+            'humidity': '💧',
+            'motion': '🏃',
+            'light': '💡',
+            'pressure': '📊'
+        };
+        
+        const icon = typeIcons[sensor.type] || '📊';
+        const sourceIcon = sensor.source === 'scanned' ? '🔍' : '📡';
+        
+        selectedSensorDetails.innerHTML = `
+            <div class="selected-sensor-detail">
+                <div class="selected-sensor-detail-label">Name</div>
+                <div class="selected-sensor-detail-value">${sensor.name}</div>
+            </div>
+            <div class="selected-sensor-detail">
+                <div class="selected-sensor-detail-label">Typ</div>
+                <div class="selected-sensor-detail-value">${icon} ${sensor.type}</div>
+            </div>
+            <div class="selected-sensor-detail">
+                <div class="selected-sensor-detail-label">Aktueller Wert</div>
+                <div class="selected-sensor-detail-value">${roundedValue} ${sensor.unit || ''}</div>
+            </div>
+            <div class="selected-sensor-detail">
+                <div class="selected-sensor-detail-label">Qualität</div>
+                <div class="selected-sensor-detail-value">${quality}%</div>
+            </div>
+            <div class="selected-sensor-detail">
+                <div class="selected-sensor-detail-label">Quelle</div>
+                <div class="selected-sensor-detail-value">${sourceIcon} ${sensor.source === 'scanned' ? 'Gescannt' : 'Entdeckt'}</div>
+            </div>
+            <div class="selected-sensor-detail">
+                <div class="selected-sensor-detail-label">MQTT Topic</div>
+                <div class="selected-sensor-detail-value" style="font-family: monospace; font-size: 0.9em;">${sensor.topic}</div>
+            </div>
+        `;
+        
+        selectedSensorInfo.style.display = 'block';
+    }
+    
+    clearSelectedSensor() {
+        // Remove selection from all cards
+        document.querySelectorAll('.sensor-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Clear hidden dropdown
+        const dropdown = document.getElementById('rule-sensor-select');
+        if (dropdown) {
+            dropdown.value = '';
+        }
+        
+        // Hide selected sensor info
+        const selectedSensorInfo = document.getElementById('selected-sensor-info');
+        if (selectedSensorInfo) {
+            selectedSensorInfo.style.display = 'none';
+        }
+        
+        // Clear template suggestions
+        const templateSuggestions = document.getElementById('template-suggestions');
+        if (templateSuggestions) {
+            templateSuggestions.style.display = 'none';
+        }
+        
+        // Reset template selection
+        const templateSelect = document.getElementById('rule-template-select');
+        if (templateSelect) {
+            templateSelect.value = '';
+        }
+        
+        // Clear custom text
+        const customText = document.getElementById('rule-custom-text');
+        if (customText) {
+            customText.value = '';
+        }
+        
+        // Update preview
+        this.updateSimpleRulePreview();
+    }
+    
+    resetSensorSelection() {
+        this.clearSelectedSensor();
+        this.showSensorSearchState();
     }
     
     onSensorSelected(sensor) {
@@ -2030,5 +2149,18 @@ function onSensorSelected() {
 function onTemplateSelected() {
     if (window.awtrixConfigUI) {
         window.awtrixConfigUI.onTemplateSelected();
+    }
+}
+
+// Global functions for sensor selection workflow
+function clearSelectedSensor() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.clearSelectedSensor();
+    }
+}
+
+function resetSensorSelection() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.resetSensorSelection();
     }
 }
