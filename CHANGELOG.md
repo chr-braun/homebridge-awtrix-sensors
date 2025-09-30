@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.41] - 2025-01-30
+
+### Added
+- **Raspberry Pi & Homebridge OS Optimierungen**
+- **Ganzzahlen für Sensoren**: Alle Sensoren geben nur ganze Zahlen aus (keine Nachkommastellen)
+- **Raspberry Pi Performance**: Längere Debounce-Zeit (500ms) und kürzere Ladezeiten (500ms)
+- **Homebridge OS Integration**: Automatische Erkennung von Raspberry Pi und Homebridge-Systemen
+- **Raspberry Pi Badge**: Zeigt "Raspberry Pi Modus - Optimiert für Homebridge OS" an
+- **Performance-Optimierungen**: Reduzierte Animationen für schwächere Hardware
+- **Vollständige Regeln-Erstellung**: Komplettes Regeln-Management System implementiert
+- **Apple Design Guidelines**: Beibehalten trotz Performance-Optimierungen
+
+### Fixed
+- **Sensoren-Werte**: Werden auf ganze Zahlen gerundet (18-28°C, 30-70%, etc.)
+- **Performance**: Optimiert für Raspberry Pi Hardware
+- **Homebridge OS**: Vollständige Kompatibilität sichergestellt
+- **Animationen**: Reduziert für bessere Performance auf schwächerer Hardware
+
+### Enhanced
+- **Raspberry Pi Erkennung**: Automatische Erkennung über User-Agent und Hostname
+- **Performance-Logging**: Konsolen-Ausgaben für Debugging auf Raspberry Pi
+- **Responsive Design**: Funktioniert optimal auf allen Bildschirmgrößen
+- **Form follows Function**: Jedes Element hat einen klaren Zweck
+
 ## [1.0.40] - 2025-01-27
 
 ### Fixed
