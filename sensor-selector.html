@@ -754,6 +754,70 @@
             min-width: auto;
         }
 
+        /* Sensor Checkbox */
+        .sensor-checkbox {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-right: var(--space-3);
+        }
+
+        .sensor-checkbox-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .sensor-checkbox-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--color-background-secondary);
+            border: 2px solid var(--color-border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .sensor-checkbox-label:hover {
+            background: var(--color-background-tertiary);
+            border-color: var(--color-accent);
+        }
+
+        .sensor-checkbox-input:checked + .sensor-checkbox-label {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+        }
+
+        .sensor-checkbox-input:checked + .sensor-checkbox-label i {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .sensor-checkbox-label i {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s ease;
+            font-size: 12px;
+        }
+
+        .sensor-card.selected .sensor-checkbox-label {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+        }
+
+        .sensor-card.selected .sensor-checkbox-label i {
+            opacity: 1;
+            transform: scale(1);
+        }
+
         /* Apple Rules Section */
         .rules-section {
             background: var(--system-background);
@@ -1844,10 +1908,10 @@
                 document.getElementById('rule-sensor').value = '';
                 document.getElementById('rule-condition').value = 'equals';
                 document.getElementById('rule-value').value = '';
-                document.getElementById('rule-display-text').value = '';
-                document.getElementById('rule-color').value = '#007AFF';
-                document.getElementById('rule-duration').value = '5';
-                document.getElementById('rule-effect').value = 'scroll';
+                document.getElementById('display-text').value = '';
+                document.getElementById('display-color').value = '#00ff00';
+                document.getElementById('display-duration').value = '5000';
+                document.getElementById('display-effect').value = 'scroll';
                 
                 this.selectedIcon = 'thermometer-half';
                 this.updateIconPreview();
@@ -2308,6 +2372,16 @@
                     <div class="sensor-card ${isSelected ? 'selected' : ''}" 
                          data-sensor-id="${sensor.id}">
                         <div class="sensor-header">
+                            <div class="sensor-checkbox">
+                                <input type="checkbox" 
+                                       id="sensor-${sensor.id}" 
+                                       ${isSelected ? 'checked' : ''}
+                                       onchange="selectSensor('${sensor.id}')"
+                                       class="sensor-checkbox-input">
+                                <label for="sensor-${sensor.id}" class="sensor-checkbox-label">
+                                    <i class="fas fa-check"></i>
+                                </label>
+                            </div>
                             <div class="sensor-icon" style="color: ${sensor.color}">
                                 <i class="fas fa-${sensor.icon}"></i>
                             </div>
@@ -2320,12 +2394,12 @@
                                 <span class="unit">${sensor.unit}</span>
                             </div>
                             <div class="sensor-actions">
-                                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); renameSensor('${sensor.id}')" title="Umbenennen">
+                                <button class="btn btn-small btn-secondary" onclick="renameSensor('${sensor.id}')" title="Umbenennen">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="sensor-details" onclick="selectSensor('${sensor.id}')">
+                        <div class="sensor-details">
                             <div class="sensor-topic">${sensor.topic}</div>
                             <div class="sensor-quality">
                                 <div class="quality-bar">
@@ -2364,10 +2438,15 @@
             }
 
             selectSensor(sensorId) {
-                if (this.selectedSensors.has(sensorId)) {
-                    this.selectedSensors.delete(sensorId);
-                } else {
+                const checkbox = document.getElementById(`sensor-${sensorId}`);
+                const card = document.querySelector(`[data-sensor-id="${sensorId}"]`);
+                
+                if (checkbox && checkbox.checked) {
                     this.selectedSensors.add(sensorId);
+                    if (card) card.classList.add('selected');
+                } else {
+                    this.selectedSensors.delete(sensorId);
+                    if (card) card.classList.remove('selected');
                 }
                 
                 this.updateSensorSelection();
