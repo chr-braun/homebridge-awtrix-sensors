@@ -1501,6 +1501,12 @@
             showRulesSection() {
                 const rulesSection = document.getElementById('rules-section');
                 if (rulesSection) {
+                    // Check if sensors are loaded first
+                    if (!this.allSensors || this.allSensors.length === 0) {
+                        this.showToast('Bitte laden Sie zuerst die Sensoren!', 'error');
+                        return;
+                    }
+                    
                     rulesSection.style.display = 'block';
                     rulesSection.scrollIntoView({ behavior: 'smooth' });
                     
@@ -1518,7 +1524,18 @@
                 // Clear existing options
                 sensorDropdown.innerHTML = '<option value="">Sensor auswählen...</option>';
                 
-                // Add all available sensors (not just selected ones)
+                // Check if sensors are loaded
+                if (!this.allSensors || this.allSensors.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Bitte zuerst Sensoren laden!';
+                    option.disabled = true;
+                    sensorDropdown.appendChild(option);
+                    this.showToast('Bitte laden Sie zuerst die Sensoren!', 'error');
+                    return;
+                }
+                
+                // Add all available sensors
                 this.allSensors.forEach(sensor => {
                     const option = document.createElement('option');
                     option.value = sensor.id;
@@ -1526,7 +1543,7 @@
                     sensorDropdown.appendChild(option);
                 });
                 
-                this.showToast(`${this.allSensors.length} Sensoren für Regeln verfügbar`, 'info');
+                this.showToast(`${this.allSensors.length} Sensoren für Regeln verfügbar`, 'success');
             }
 
             initializeIconCategories() {
