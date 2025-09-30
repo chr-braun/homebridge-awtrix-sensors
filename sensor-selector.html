@@ -1518,16 +1518,15 @@
                 // Clear existing options
                 sensorDropdown.innerHTML = '<option value="">Sensor auswählen...</option>';
                 
-                // Add selected sensors
-                Array.from(this.selectedSensors).forEach(sensorId => {
-                    const sensor = this.allSensors.find(s => s.id === sensorId);
-                    if (sensor) {
-                        const option = document.createElement('option');
-                        option.value = sensorId;
-                        option.textContent = sensor.name;
-                        sensorDropdown.appendChild(option);
-                    }
+                // Add all available sensors (not just selected ones)
+                this.allSensors.forEach(sensor => {
+                    const option = document.createElement('option');
+                    option.value = sensor.id;
+                    option.textContent = `${sensor.name} (${this.getTypeLabel(sensor.type)})`;
+                    sensorDropdown.appendChild(option);
                 });
+                
+                this.showToast(`${this.allSensors.length} Sensoren für Regeln verfügbar`, 'info');
             }
 
             initializeIconCategories() {
