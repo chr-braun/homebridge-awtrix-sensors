@@ -596,6 +596,164 @@
             font-size: 1.2em;
         }
 
+        /* Icon Selector */
+        .icon-selector {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .icon-preview {
+            width: 40px;
+            height: 40px;
+            background: var(--system-gray6);
+            border: 2px solid var(--system-gray4);
+            border-radius: var(--radius-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: var(--system-blue);
+        }
+
+        .icon-preview:hover {
+            border-color: var(--system-blue);
+            background: var(--system-blue)10;
+        }
+
+        /* Icon Selector Modal */
+        .icon-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .icon-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--system-background);
+            border-radius: var(--radius-large);
+            padding: var(--space-6);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-large);
+        }
+
+        .icon-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--system-gray5);
+        }
+
+        .icon-modal-title {
+            font-size: var(--font-size-large);
+            font-weight: var(--font-weight-semibold);
+            color: var(--label-primary);
+        }
+
+        .icon-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            color: var(--label-secondary);
+            cursor: pointer;
+            padding: var(--space-2);
+            border-radius: var(--radius-small);
+        }
+
+        .icon-modal-close:hover {
+            background: var(--system-gray6);
+            color: var(--label-primary);
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .icon-option {
+            width: 60px;
+            height: 60px;
+            background: var(--system-gray6);
+            border: 2px solid var(--system-gray4);
+            border-radius: var(--radius-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: var(--label-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .icon-option:hover {
+            border-color: var(--system-blue);
+            background: var(--system-blue)10;
+            transform: scale(1.05);
+        }
+
+        .icon-option.selected {
+            border-color: var(--system-blue);
+            background: var(--system-blue);
+            color: white;
+        }
+
+        .icon-categories {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .icon-category-btn {
+            padding: var(--space-2) var(--space-4);
+            background: var(--system-gray6);
+            border: 1px solid var(--system-gray4);
+            border-radius: var(--radius-small);
+            color: var(--label-primary);
+            cursor: pointer;
+            font-size: var(--font-size-small);
+            transition: all 0.2s ease;
+        }
+
+        .icon-category-btn:hover {
+            background: var(--system-gray5);
+        }
+
+        .icon-category-btn.active {
+            background: var(--system-blue);
+            color: white;
+            border-color: var(--system-blue);
+        }
+
+        /* Sensor Actions */
+        .sensor-actions {
+            display: flex;
+            gap: var(--space-2);
+            margin-left: auto;
+        }
+
+        .sensor-actions .btn {
+            padding: var(--space-1) var(--space-2);
+            font-size: 0.8em;
+            min-width: auto;
+        }
+
         /* Apple Rules Section */
         .rules-section {
             background: var(--system-background);
@@ -1124,6 +1282,18 @@
                                     <label for="display-color">Farbe:</label>
                                     <input type="color" id="display-color" class="form-control" value="#00ff00" onchange="updateRulePreview()">
                                 </div>
+                                
+                                <div class="form-group">
+                                    <label for="display-icon">Icon:</label>
+                                    <div class="icon-selector">
+                                        <div class="icon-preview" id="icon-preview">
+                                            <i class="fas fa-thermometer-half" id="selected-icon"></i>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary btn-small" onclick="openIconSelector()">
+                                            <i class="fas fa-palette"></i> Icon auswählen
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="form-row">
@@ -1194,6 +1364,39 @@
         </div>
     </div>
 
+    <!-- Icon Selector Modal -->
+    <div id="icon-modal" class="icon-modal">
+        <div class="icon-modal-content">
+            <div class="icon-modal-header">
+                <h3 class="icon-modal-title">Icon auswählen</h3>
+                <button class="icon-modal-close" onclick="closeIconSelector()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="icon-categories">
+                <button class="icon-category-btn active" onclick="filterIcons('all')">Alle</button>
+                <button class="icon-category-btn" onclick="filterIcons('weather')">Wetter</button>
+                <button class="icon-category-btn" onclick="filterIcons('home')">Haus</button>
+                <button class="icon-category-btn" onclick="filterIcons('tech')">Technik</button>
+                <button class="icon-category-btn" onclick="filterIcons('sensor')">Sensoren</button>
+            </div>
+            
+            <div id="icon-grid" class="icon-grid">
+                <!-- Icons werden hier dynamisch geladen -->
+            </div>
+            
+            <div class="icon-modal-actions">
+                <button class="btn btn-primary" onclick="confirmIconSelection()">
+                    <i class="fas fa-check"></i> Auswählen
+                </button>
+                <button class="btn btn-secondary" onclick="closeIconSelector()">
+                    <i class="fas fa-times"></i> Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         class SensorSelector {
             constructor() {
@@ -1206,6 +1409,8 @@
                 this.currentRule = null;
                 this.previewInterval = null;
                 this.isRaspberryPi = this.detectRaspberryPi();
+                this.selectedIcon = 'thermometer-half';
+                this.iconCategories = this.initializeIconCategories();
                 
                 this.initializeEventListeners();
                 this.loadRules();
@@ -1235,6 +1440,37 @@
                         badge.style.display = 'inline-flex';
                     }
                 }
+            }
+
+            initializeIconCategories() {
+                return {
+                    all: [
+                        'thermometer-half', 'tint', 'walking', 'sun', 'cloud', 'wind', 'volume-up',
+                        'home', 'door-open', 'window-maximize', 'lightbulb', 'plug', 'wifi',
+                        'mobile-alt', 'laptop', 'desktop', 'tv', 'camera', 'headphones',
+                        'car', 'bicycle', 'plane', 'train', 'ship', 'motorcycle',
+                        'heart', 'heartbeat', 'shield-alt', 'lock', 'unlock', 'key',
+                        'bell', 'envelope', 'phone', 'calendar', 'clock', 'stopwatch',
+                        'chart-line', 'chart-bar', 'chart-pie', 'calculator', 'database',
+                        'cog', 'wrench', 'hammer', 'screwdriver', 'tools'
+                    ],
+                    weather: [
+                        'thermometer-half', 'tint', 'sun', 'cloud', 'wind', 'cloud-rain',
+                        'cloud-sun', 'cloud-moon', 'snowflake', 'bolt', 'umbrella'
+                    ],
+                    home: [
+                        'home', 'door-open', 'window-maximize', 'lightbulb', 'plug',
+                        'wifi', 'tv', 'camera', 'lock', 'unlock', 'key', 'bell'
+                    ],
+                    tech: [
+                        'mobile-alt', 'laptop', 'desktop', 'wifi', 'bluetooth',
+                        'headphones', 'microphone', 'video', 'database', 'server'
+                    ],
+                    sensor: [
+                        'thermometer-half', 'tint', 'walking', 'sun', 'volume-up',
+                        'heartbeat', 'eye', 'hand-paper', 'fingerprint', 'radar'
+                    ]
+                };
             }
 
             initializeEventListeners() {
@@ -1438,39 +1674,6 @@
 
                 grid.innerHTML = this.filteredSensors.map(sensor => this.createSensorCard(sensor)).join('');
                 this.updateSearchResultsInfo();
-            }
-
-            createSensorCard(sensor) {
-                const isSelected = this.selectedSensors.has(sensor.id);
-                return `
-                    <div class="sensor-card ${isSelected ? 'selected' : ''}" 
-                         onclick="selectSensor('${sensor.id}')" 
-                         data-sensor-id="${sensor.id}">
-                        <div class="sensor-header">
-                            <div class="sensor-icon" style="color: ${sensor.color}">
-                                <i class="fas fa-${sensor.icon}"></i>
-                            </div>
-                            <div class="sensor-info">
-                                <h3 class="sensor-name">${sensor.name}</h3>
-                                <p class="sensor-type">${this.getTypeLabel(sensor.type)}</p>
-                            </div>
-                            <div class="sensor-value">
-                                <span class="value">${sensor.value}</span>
-                                <span class="unit">${sensor.unit}</span>
-                            </div>
-                        </div>
-                        <div class="sensor-details">
-                            <div class="sensor-topic">${sensor.topic}</div>
-                            <div class="sensor-quality">
-                                <div class="quality-bar">
-                                    <div class="quality-fill" style="width: ${sensor.quality}%; background-color: ${this.getQualityColor(sensor.quality)}"></div>
-                                </div>
-                                <span class="quality-text">${sensor.quality}%</span>
-                            </div>
-                            <div class="sensor-time">${sensor.lastSeen}</div>
-                        </div>
-                    </div>
-                `;
             }
 
             toggleSensorSelection(sensorId, card) {
@@ -2012,22 +2215,26 @@
                 const isSelected = this.selectedSensors.has(sensor.id);
                 return `
                     <div class="sensor-card ${isSelected ? 'selected' : ''}" 
-                         onclick="selectSensor('${sensor.id}')" 
                          data-sensor-id="${sensor.id}">
                         <div class="sensor-header">
                             <div class="sensor-icon" style="color: ${sensor.color}">
                                 <i class="fas fa-${sensor.icon}"></i>
                             </div>
                             <div class="sensor-info">
-                                <h3 class="sensor-name">${sensor.name}</h3>
+                                <h3 class="sensor-name" id="sensor-name-${sensor.id}">${sensor.name}</h3>
                                 <p class="sensor-type">${this.getTypeLabel(sensor.type)}</p>
                             </div>
                             <div class="sensor-value">
                                 <span class="value">${sensor.value}</span>
                                 <span class="unit">${sensor.unit}</span>
                             </div>
+                            <div class="sensor-actions">
+                                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); renameSensor('${sensor.id}')" title="Umbenennen">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="sensor-details">
+                        <div class="sensor-details" onclick="selectSensor('${sensor.id}')">
                             <div class="sensor-topic">${sensor.topic}</div>
                             <div class="sensor-quality">
                                 <div class="quality-bar">
@@ -2086,6 +2293,68 @@
                         card.classList.remove('selected');
                     }
                 });
+            }
+
+            // Icon Selector Methods
+            loadIconGrid(category) {
+                const iconGrid = document.getElementById('icon-grid');
+                if (!iconGrid) return;
+
+                const icons = this.iconCategories[category] || this.iconCategories.all;
+                iconGrid.innerHTML = icons.map(icon => `
+                    <div class="icon-option ${icon === this.selectedIcon ? 'selected' : ''}" 
+                         onclick="sensorSelector.selectIcon('${icon}')" 
+                         data-icon="${icon}">
+                        <i class="fas fa-${icon}"></i>
+                    </div>
+                `).join('');
+            }
+
+            selectIcon(iconName) {
+                this.selectedIcon = iconName;
+                
+                // Update visual selection
+                document.querySelectorAll('.icon-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                const selectedOption = document.querySelector(`[data-icon="${iconName}"]`);
+                if (selectedOption) {
+                    selectedOption.classList.add('selected');
+                }
+            }
+
+            confirmIconSelection() {
+                // Update the icon preview
+                const iconPreview = document.getElementById('selected-icon');
+                if (iconPreview) {
+                    iconPreview.className = `fas fa-${this.selectedIcon}`;
+                }
+                
+                // Update rule preview
+                this.updateRulePreview();
+                
+                this.showToast(`Icon "${this.selectedIcon}" ausgewählt`, 'success');
+            }
+
+            // Sensor Rename Methods
+            renameSensor(sensorId, newName) {
+                const sensor = this.allSensors.find(s => s.id === sensorId);
+                if (!sensor) return;
+
+                const oldName = sensor.name;
+                sensor.name = newName;
+
+                // Update in filteredSensors if present
+                const filteredSensor = this.filteredSensors.find(s => s.id === sensorId);
+                if (filteredSensor) {
+                    filteredSensor.name = newName;
+                }
+
+                // Update display
+                this.displaySensors();
+                
+                this.showToast(`Sensor umbenannt: "${oldName}" → "${newName}"`, 'success');
             }
         }
 
@@ -2147,6 +2416,49 @@
 
         function selectSensor(sensorId) {
             sensorSelector.selectSensor(sensorId);
+        }
+
+        // Icon Selector Functions
+        function openIconSelector() {
+            const modal = document.getElementById('icon-modal');
+            if (modal) {
+                modal.style.display = 'block';
+                sensorSelector.loadIconGrid('all');
+            }
+        }
+
+        function closeIconSelector() {
+            const modal = document.getElementById('icon-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function filterIcons(category) {
+            // Update category buttons
+            document.querySelectorAll('.icon-category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Load icons for category
+            sensorSelector.loadIconGrid(category);
+        }
+
+        function confirmIconSelection() {
+            sensorSelector.confirmIconSelection();
+            closeIconSelector();
+        }
+
+        // Sensor Rename Functions
+        function renameSensor(sensorId) {
+            const sensor = sensorSelector.allSensors.find(s => s.id === sensorId);
+            if (!sensor) return;
+
+            const newName = prompt(`Neuer Name für "${sensor.name}":`, sensor.name);
+            if (newName && newName.trim() && newName !== sensor.name) {
+                sensorSelector.renameSensor(sensorId, newName.trim());
+            }
         }
     </script>
 </body>
