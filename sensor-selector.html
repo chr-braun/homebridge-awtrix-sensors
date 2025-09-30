@@ -1008,6 +1008,10 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <button class="btn btn-primary" onclick="loadSensors()">
+                        <i class="fas fa-sync"></i>
+                        Sensoren laden
+                    </button>
                     <button class="btn btn-secondary btn-small" onclick="goBack()">
                         <i class="fas fa-arrow-left"></i>
                         Zurück
@@ -1409,72 +1413,52 @@
                 const grid = document.getElementById('sensors-grid');
                 const noSensors = document.getElementById('no-sensors');
                 
+                if (!grid) return;
+
                 if (this.filteredSensors.length === 0) {
                     grid.style.display = 'none';
-                    noSensors.style.display = 'block';
+                    if (noSensors) noSensors.style.display = 'block';
                     return;
                 }
 
                 grid.style.display = 'grid';
-                noSensors.style.display = 'none';
-                grid.innerHTML = '';
+                if (noSensors) noSensors.style.display = 'none';
 
-                this.filteredSensors.forEach(sensor => {
-                    const card = this.createSensorCard(sensor);
-                    grid.appendChild(card);
-                });
-
-                this.updateStatus();
+                grid.innerHTML = this.filteredSensors.map(sensor => this.createSensorCard(sensor)).join('');
+                this.updateSearchResultsInfo();
             }
 
             createSensorCard(sensor) {
-                const card = document.createElement('div');
-                card.className = 'sensor-card';
-                card.dataset.sensorId = sensor.id;
-                
-                const qualityColor = this.getQualityColor(sensor.quality);
-                const qualityWidth = Math.max(10, sensor.quality);
-                const statusColor = this.getStatusColor(sensor);
                 const isSelected = this.selectedSensors.has(sensor.id);
-                
-                if (isSelected) {
-                    card.classList.add('selected');
-                }
-
-                card.innerHTML = `
-                    <div class="sensor-header">
-                        <div class="sensor-icon" style="color: ${sensor.color};">
-                            <i class="fas fa-${sensor.icon}"></i>
-                        </div>
-                        <div class="sensor-info">
-                            <h3>${sensor.name}</h3>
-                            <span class="sensor-type" style="background-color: ${sensor.color}20; color: ${sensor.color};">
-                                ${sensor.name.split(' ')[0]}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="sensor-details">
-                        <div class="sensor-topic">${sensor.topic}</div>
-                        <div class="sensor-value-container">
-                            <span class="sensor-value" style="color: ${statusColor};">${sensor.value}</span>
-                            <span class="sensor-unit">${sensor.unit}</span>
-                        </div>
-                        <div class="sensor-meta">
-                            <div class="quality-indicator">
-                                <span>Qualität:</span>
-                                <div class="quality-bar">
-                                    <div class="quality-fill" style="width: ${qualityWidth}%; background: ${qualityColor};"></div>
-                                </div>
-                                <span>${sensor.quality}%</span>
+                return `
+                    <div class="sensor-card ${isSelected ? 'selected' : ''}" 
+                         onclick="selectSensor('${sensor.id}')" 
+                         data-sensor-id="${sensor.id}">
+                        <div class="sensor-header">
+                            <div class="sensor-icon" style="color: ${sensor.color}">
+                                <i class="fas fa-${sensor.icon}"></i>
                             </div>
-                            <div class="last-seen">${sensor.lastSeen}</div>
+                            <div class="sensor-info">
+                                <h3 class="sensor-name">${sensor.name}</h3>
+                                <p class="sensor-type">${this.getTypeLabel(sensor.type)}</p>
+                            </div>
+                            <div class="sensor-value">
+                                <span class="value">${sensor.value}</span>
+                                <span class="unit">${sensor.unit}</span>
+                            </div>
+                        </div>
+                        <div class="sensor-details">
+                            <div class="sensor-topic">${sensor.topic}</div>
+                            <div class="sensor-quality">
+                                <div class="quality-bar">
+                                    <div class="quality-fill" style="width: ${sensor.quality}%; background-color: ${this.getQualityColor(sensor.quality)}"></div>
+                                </div>
+                                <span class="quality-text">${sensor.quality}%</span>
+                            </div>
+                            <div class="sensor-time">${sensor.lastSeen}</div>
                         </div>
                     </div>
                 `;
-
-                card.addEventListener('click', () => this.toggleSensorSelection(sensor.id, card));
-                
-                return card;
             }
 
             toggleSensorSelection(sensorId, card) {
@@ -1929,6 +1913,168 @@
                     toast.remove();
                 }, 3000);
             }
+
+            // Search and Filter Methods
+            performSearch(searchTerm) {
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    this.filterSensors(searchTerm);
+                }, this.debounceDelay);
+            }
+
+            filterSensors(searchTerm = '') {
+                const typeFilter = document.getElementById('type-filter')?.value || '';
+                const qualityFilter = document.getElementById('quality-filter')?.value || '';
+
+                this.filteredSensors = this.allSensors.filter(sensor => {
+                    const matchesSearch = !searchTerm || 
+                        sensor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        sensor.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        sensor.topic.toLowerCase().includes(searchTerm.toLowerCase());
+                    
+                    const matchesType = !typeFilter || sensor.type === typeFilter;
+                    const matchesQuality = !qualityFilter || this.matchesQualityFilter(sensor.quality, qualityFilter);
+                    
+                    return matchesSearch && matchesType && matchesQuality;
+                });
+
+                this.displaySensors();
+                this.updateSearchResultsInfo();
+            }
+
+            matchesQualityFilter(quality, filter) {
+                switch (filter) {
+                    case 'excellent': return quality >= 90;
+                    case 'good': return quality >= 70 && quality < 90;
+                    case 'fair': return quality >= 50 && quality < 70;
+                    case 'poor': return quality < 50;
+                    default: return true;
+                }
+            }
+
+            clearSearch() {
+                const searchInput = document.getElementById('search-input');
+                const typeFilter = document.getElementById('type-filter');
+                const qualityFilter = document.getElementById('quality-filter');
+                
+                if (searchInput) searchInput.value = '';
+                if (typeFilter) typeFilter.value = '';
+                if (qualityFilter) qualityFilter.value = '';
+                
+                this.filterSensors();
+            }
+
+            updateSearchResultsInfo() {
+                const statusInfo = document.getElementById('status-info');
+                const statusText = document.getElementById('status-text');
+                
+                if (statusInfo && statusText) {
+                    const total = this.allSensors.length;
+                    const filtered = this.filteredSensors.length;
+                    const selected = this.selectedSensors.size;
+                    
+                    statusText.textContent = `${selected} von ${filtered} Sensoren ausgewählt (${total} gesamt)`;
+                    statusInfo.style.display = 'block';
+                }
+            }
+
+            displaySensors() {
+                const grid = document.getElementById('sensors-grid');
+                const noSensors = document.getElementById('no-sensors');
+                
+                if (!grid) return;
+
+                if (this.filteredSensors.length === 0) {
+                    grid.style.display = 'none';
+                    if (noSensors) noSensors.style.display = 'block';
+                    return;
+                }
+
+                grid.style.display = 'grid';
+                if (noSensors) noSensors.style.display = 'none';
+
+                grid.innerHTML = this.filteredSensors.map(sensor => this.createSensorCard(sensor)).join('');
+            }
+
+            createSensorCard(sensor) {
+                const isSelected = this.selectedSensors.has(sensor.id);
+                return `
+                    <div class="sensor-card ${isSelected ? 'selected' : ''}" 
+                         onclick="selectSensor('${sensor.id}')" 
+                         data-sensor-id="${sensor.id}">
+                        <div class="sensor-header">
+                            <div class="sensor-icon" style="color: ${sensor.color}">
+                                <i class="fas fa-${sensor.icon}"></i>
+                            </div>
+                            <div class="sensor-info">
+                                <h3 class="sensor-name">${sensor.name}</h3>
+                                <p class="sensor-type">${this.getTypeLabel(sensor.type)}</p>
+                            </div>
+                            <div class="sensor-value">
+                                <span class="value">${sensor.value}</span>
+                                <span class="unit">${sensor.unit}</span>
+                            </div>
+                        </div>
+                        <div class="sensor-details">
+                            <div class="sensor-topic">${sensor.topic}</div>
+                            <div class="sensor-quality">
+                                <div class="quality-bar">
+                                    <div class="quality-fill" style="width: ${sensor.quality}%; background-color: ${this.getQualityColor(sensor.quality)}"></div>
+                                </div>
+                                <span class="quality-text">${sensor.quality}%</span>
+                            </div>
+                            <div class="sensor-time">${sensor.lastSeen}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getTypeLabel(type) {
+                const labels = {
+                    temperature: 'Temperatur',
+                    humidity: 'Luftfeuchtigkeit',
+                    motion: 'Bewegung',
+                    light: 'Helligkeit',
+                    pressure: 'Druck',
+                    co2: 'CO₂',
+                    sound: 'Lautstärke',
+                    voltage: 'Spannung',
+                    current: 'Strom',
+                    power: 'Leistung',
+                    energy: 'Energie'
+                };
+                return labels[type] || type;
+            }
+
+            getQualityColor(quality) {
+                if (quality >= 90) return '#34C759'; // Green
+                if (quality >= 70) return '#FF9500'; // Orange
+                if (quality >= 50) return '#FF3B30'; // Red
+                return '#8E8E93'; // Gray
+            }
+
+            selectSensor(sensorId) {
+                if (this.selectedSensors.has(sensorId)) {
+                    this.selectedSensors.delete(sensorId);
+                } else {
+                    this.selectedSensors.add(sensorId);
+                }
+                
+                this.updateSensorSelection();
+                this.updateSearchResultsInfo();
+            }
+
+            updateSensorSelection() {
+                // Update visual selection state
+                document.querySelectorAll('.sensor-card').forEach(card => {
+                    const sensorId = card.dataset.sensorId;
+                    if (this.selectedSensors.has(sensorId)) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+            }
         }
 
         // Initialize the sensor selector
@@ -1977,6 +2123,18 @@
 
         function clearRuleForm() {
             sensorSelector.clearRuleForm();
+        }
+
+        function filterSensors() {
+            sensorSelector.performSearch(document.getElementById('search-input').value);
+        }
+
+        function clearFilters() {
+            sensorSelector.clearSearch();
+        }
+
+        function selectSensor(sensorId) {
+            sensorSelector.selectSensor(sensorId);
         }
     </script>
 </body>
