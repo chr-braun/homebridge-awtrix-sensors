@@ -807,6 +807,125 @@
             border-radius: var(--radius-small) var(--radius-small) 0 0;
         }
 
+        /* Sensor Configuration Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--system-background);
+            border-radius: var(--radius-large);
+            padding: 0;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: var(--color-text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            padding: var(--space-2);
+        }
+
+        .close-btn:hover {
+            color: var(--color-text-primary);
+        }
+
+        .modal-body {
+            padding: var(--space-6);
+        }
+
+        .sensor-info {
+            background: var(--color-background-secondary);
+            border-radius: var(--radius-medium);
+            padding: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .sensor-preview {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .sensor-icon-preview {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-accent);
+            border-radius: var(--radius-medium);
+            color: white;
+            font-size: 24px;
+        }
+
+        .sensor-details-preview h3 {
+            margin: 0 0 var(--space-1) 0;
+            color: var(--color-text-primary);
+        }
+
+        .sensor-details-preview p {
+            margin: 0;
+            color: var(--color-text-secondary);
+        }
+
+        .config-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-3);
+            padding: var(--space-6);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .config-indicator {
+            position: absolute;
+            top: var(--space-2);
+            right: var(--space-2);
+            background: var(--color-accent);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
         /* Apple Rules Section */
         .rules-section {
             background: var(--system-background);
@@ -1420,6 +1539,85 @@
         </div>
     </div>
 
+    <!-- Sensor Configuration Modal -->
+    <div id="sensor-config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cogs"></i> Sensor konfigurieren</h2>
+                <button class="close-btn" onclick="closeSensorConfig()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="sensor-info">
+                    <div class="sensor-preview">
+                        <div class="sensor-icon-preview" id="config-sensor-icon">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                        <div class="sensor-details-preview">
+                            <h3 id="config-sensor-name">Sensor Name</h3>
+                            <p id="config-sensor-type">Sensor Typ</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-form">
+                    <div class="form-group">
+                        <label for="config-display-text">Anzeige-Text:</label>
+                        <input type="text" id="config-display-text" class="form-control" placeholder="z.B. {name}: {value}{unit}">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="config-color">Farbe:</label>
+                            <input type="color" id="config-color" class="form-control" value="#00ff00">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-duration">Anzeige-Dauer (ms):</label>
+                            <input type="number" id="config-duration" class="form-control" value="5000" min="1000" max="30000">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="config-effect">Effekt:</label>
+                            <select id="config-effect" class="form-control">
+                                <option value="scroll">Scroll</option>
+                                <option value="fade">Fade</option>
+                                <option value="blink">Blink</option>
+                                <option value="rainbow">Rainbow</option>
+                                <option value="static">Static</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="config-enabled">Anzeigen:</label>
+                            <select id="config-enabled" class="form-control">
+                                <option value="true">Ja</option>
+                                <option value="false">Nein</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Icon auswählen:</label>
+                        <div class="icon-selector">
+                            <div class="icon-preview" id="config-icon-preview">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <button class="btn btn-secondary" onclick="openConfigIconSelector()">
+                                <i class="fas fa-image"></i> Icon auswählen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSensorConfig()">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveSensorConfig()">
+                    <i class="fas fa-save"></i> Speichern
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Icon Selector Modal -->
     <div id="icon-modal" class="icon-modal">
         <div class="icon-modal-content">
@@ -1924,6 +2122,108 @@
                 this.showToast('Formular geleert', 'info');
             }
 
+            openSensorConfig(sensorId) {
+                const sensor = this.allSensors.find(s => s.id === sensorId);
+                if (!sensor) {
+                    this.showToast('Sensor nicht gefunden!', 'error');
+                    return;
+                }
+
+                // Store current sensor ID
+                this.currentConfigSensorId = sensorId;
+
+                // Update modal with sensor info
+                document.getElementById('config-sensor-name').textContent = sensor.name;
+                document.getElementById('config-sensor-type').textContent = this.getTypeLabel(sensor.type);
+                document.getElementById('config-sensor-icon').innerHTML = `<i class="fas fa-${sensor.icon}"></i>`;
+                document.getElementById('config-sensor-icon').style.color = sensor.color;
+
+                // Pre-fill form with sensor data
+                document.getElementById('config-display-text').value = `${sensor.name}: {value}${sensor.unit}`;
+                document.getElementById('config-color').value = sensor.color || '#00ff00';
+                document.getElementById('config-duration').value = '5000';
+                document.getElementById('config-effect').value = 'scroll';
+                document.getElementById('config-enabled').value = 'true';
+
+                // Update icon preview
+                document.getElementById('config-icon-preview').innerHTML = `<i class="fas fa-${sensor.icon}"></i>`;
+                this.selectedConfigIcon = sensor.icon;
+
+                // Show modal
+                document.getElementById('sensor-config-modal').style.display = 'flex';
+            }
+
+            closeSensorConfig() {
+                document.getElementById('sensor-config-modal').style.display = 'none';
+                this.currentConfigSensorId = null;
+            }
+
+            saveSensorConfig() {
+                if (!this.currentConfigSensorId) {
+                    this.showToast('Kein Sensor ausgewählt!', 'error');
+                    return;
+                }
+
+                const sensor = this.allSensors.find(s => s.id === this.currentConfigSensorId);
+                if (!sensor) {
+                    this.showToast('Sensor nicht gefunden!', 'error');
+                    return;
+                }
+
+                // Get form data
+                const config = {
+                    displayText: document.getElementById('config-display-text').value,
+                    color: document.getElementById('config-color').value,
+                    duration: parseInt(document.getElementById('config-duration').value),
+                    effect: document.getElementById('config-effect').value,
+                    enabled: document.getElementById('config-enabled').value === 'true',
+                    icon: this.selectedConfigIcon || sensor.icon
+                };
+
+                // Validate
+                if (!config.displayText.trim()) {
+                    this.showToast('Bitte geben Sie einen Anzeige-Text ein!', 'error');
+                    return;
+                }
+
+                // Save to sensor
+                sensor.config = config;
+                sensor.displayText = config.displayText;
+                sensor.displayColor = config.color;
+                sensor.displayDuration = config.duration;
+                sensor.displayEffect = config.effect;
+                sensor.enabled = config.enabled;
+                sensor.icon = config.icon;
+
+                // Update sensor card
+                this.updateSensorCard(sensor);
+
+                this.showToast(`Konfiguration für ${sensor.name} gespeichert!`, 'success');
+                this.closeSensorConfig();
+            }
+
+            updateSensorCard(sensor) {
+                const card = document.querySelector(`[data-sensor-id="${sensor.id}"]`);
+                if (card) {
+                    // Update icon
+                    const iconElement = card.querySelector('.sensor-icon i');
+                    if (iconElement) {
+                        iconElement.className = `fas fa-${sensor.icon}`;
+                        iconElement.style.color = sensor.displayColor || sensor.color;
+                    }
+
+                    // Add config indicator
+                    let configIndicator = card.querySelector('.config-indicator');
+                    if (!configIndicator) {
+                        configIndicator = document.createElement('div');
+                        configIndicator.className = 'config-indicator';
+                        configIndicator.innerHTML = '<i class="fas fa-cog"></i>';
+                        card.querySelector('.sensor-header').appendChild(configIndicator);
+                    }
+                    configIndicator.style.display = sensor.config ? 'block' : 'none';
+                }
+            }
+
             getQualityColor(quality) {
                 if (quality >= 90) return '#28a745';
                 if (quality >= 70) return '#ffc107';
@@ -2390,6 +2690,9 @@
                                 <span class="unit">${sensor.unit}</span>
                             </div>
                             <div class="sensor-actions">
+                                <button class="btn btn-small btn-primary" onclick="event.stopPropagation(); openSensorConfig('${sensor.id}')" title="Sensor konfigurieren">
+                                    <i class="fas fa-cogs"></i>
+                                </button>
                                 <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); renameSensor('${sensor.id}')" title="Umbenennen">
                                     <i class="fas fa-edit"></i>
                                 </button>
@@ -2675,6 +2978,22 @@
             link.click();
             
             sensorSelector.showToast('Konfiguration exportiert!', 'success');
+        }
+
+        function openSensorConfig(sensorId) {
+            sensorSelector.openSensorConfig(sensorId);
+        }
+
+        function closeSensorConfig() {
+            sensorSelector.closeSensorConfig();
+        }
+
+        function saveSensorConfig() {
+            sensorSelector.saveSensorConfig();
+        }
+
+        function openConfigIconSelector() {
+            document.getElementById('icon-modal').style.display = 'flex';
         }
     </script>
 </body>
