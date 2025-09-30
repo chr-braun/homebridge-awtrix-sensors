@@ -2498,6 +2498,83 @@ function onSensorSelected() {
         this.filterSensors();
     }
 
+    // Open external sensor selector
+    openSensorSelector() {
+        const portInput = document.getElementById('server-port');
+        const statusDiv = document.getElementById('external-sensor-status');
+        
+        if (!portInput || !statusDiv) return;
+        
+        const port = portInput.value || '8081';
+        const url = `http://localhost:${port}`;
+        
+        // Show loading status
+        statusDiv.className = 'external-sensor-status info';
+        statusDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Starte Sensor-Server auf Port ${port}...`;
+        statusDiv.style.display = 'block';
+        
+        // Try to open the external sensor selector
+        try {
+            // Open in new window/tab
+            const newWindow = window.open(url, 'sensorSelector', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+            
+            if (newWindow) {
+                statusDiv.className = 'external-sensor-status success';
+                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> Sensor-Auswahl geöffnet! URL: ${url}`;
+                
+                // Check if the window is still open periodically
+                const checkWindow = setInterval(() => {
+                    if (newWindow.closed) {
+                        clearInterval(checkWindow);
+                        statusDiv.className = 'external-sensor-status info';
+                        statusDiv.innerHTML = `<i class="fas fa-info-circle"></i> Sensor-Auswahl geschlossen. Ausgewählte Sensoren werden automatisch übernommen.`;
+                        
+                        // Try to load selected sensors from localStorage
+                        this.loadSelectedSensors();
+                    }
+                }, 1000);
+                
+            } else {
+                // Popup was blocked
+                statusDiv.className = 'external-sensor-status error';
+                statusDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Popup blockiert! Bitte erlauben Sie Popups für diese Seite und versuchen Sie es erneut.`;
+            }
+            
+        } catch (error) {
+            console.error('Error opening sensor selector:', error);
+            statusDiv.className = 'external-sensor-status error';
+            statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> Fehler beim Öffnen der Sensor-Auswahl: ${error.message}`;
+        }
+    }
+
+    // Load selected sensors from external selector
+    loadSelectedSensors() {
+        try {
+            const selectedSensors = localStorage.getItem('awtrix_selected_sensors');
+            if (selectedSensors) {
+                const sensors = JSON.parse(selectedSensors);
+                if (sensors && sensors.length > 0) {
+                    // Update discovered sensors with selected ones
+                    this.discoveredSensors = sensors;
+                    
+                    // Show success message
+                    this.showToast(`${sensors.length} Sensoren aus externer Auswahl geladen!`, 'success');
+                    
+                    // Switch to sensors tab if not already there
+                    if (this.currentTab !== 'sensors') {
+                        this.showTab('sensors');
+                    }
+                    
+                    // Clear localStorage
+                    localStorage.removeItem('awtrix_selected_sensors');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading selected sensors:', error);
+            this.showToast('Fehler beim Laden der ausgewählten Sensoren', 'error');
+        }
+    }
+
 }
 
 // Global functions for HTML onclick handlers
@@ -2534,6 +2611,12 @@ function filterSensors() {
 function clearSearch() {
     if (window.awtrixConfigUI) {
         window.awtrixConfigUI.clearSearch();
+    }
+}
+
+function openSensorSelector() {
+    if (window.awtrixConfigUI) {
+        window.awtrixConfigUI.openSensorSelector();
     }
 }
 

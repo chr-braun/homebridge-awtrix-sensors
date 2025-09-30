@@ -12,6 +12,9 @@ import { MqttSensorScanner, SensorScanResult } from '../utils/MqttSensorScanner'
 import { SensorRuleEngine, SensorRule, SensorValue } from '../utils/SensorRuleEngine';
 import { AwtrixLogger } from '../utils/Logger';
 import { AwtrixConfig, SensorConfig } from '../types';
+import { spawn, ChildProcess } from 'child_process';
+import * as path from 'path';
+import * as fs from 'fs';
 
 export class AwtrixSensorsPlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service = this.api.hap.Service;
@@ -26,6 +29,7 @@ export class AwtrixSensorsPlatform implements DynamicPlatformPlugin {
   private discoveredSensors: Map<string, DiscoveredSensor> = new Map();
   private scannedSensors: Map<string, SensorScanResult> = new Map();
   private awtrixLogger: AwtrixLogger;
+  private sensorServerProcess?: ChildProcess;
 
   constructor(
     public readonly log: Logger,
@@ -57,7 +61,14 @@ export class AwtrixSensorsPlatform implements DynamicPlatformPlugin {
       this.log.debug('Executed didFinishLaunching callback');
       this.awtrixLogger.info('PLATFORM', 'Homebridge didFinishLaunching event triggered');
       this.setupLoggingAPI();
+      this.startSensorServer();
       this.discoverDevicesAndSensors();
+    });
+
+    // Cleanup when Homebridge shuts down
+    this.api.on('shutdown', () => {
+      this.log.info('Homebridge shutting down, stopping sensor server...');
+      this.stopSensorServer();
     });
   }
 
@@ -976,5 +987,102 @@ export class AwtrixSensorsPlatform implements DynamicPlatformPlugin {
       lastTriggered: stats.lastEvaluation,
       averageTriggerTime: 0
     };
+  }
+
+  private startSensorServer(): void {
+    try {
+      // Get the plugin directory path - go up from lib/platforms to the plugin root
+      const pluginDir = path.resolve(__dirname, '..', '..', '..');
+      const sensorServerPath = path.join(pluginDir, 'homebridge-awtrix-sensors', 'start-sensor-server.py');
+      
+      // Alternative path if the above doesn't work
+      const alternativePath = path.join(pluginDir, 'start-sensor-server.py');
+      const finalPath = fs.existsSync(sensorServerPath) ? sensorServerPath : alternativePath;
+      
+      // Check if the sensor server file exists
+      if (!fs.existsSync(finalPath)) {
+        this.log.error(`Sensor server file not found: ${finalPath}`);
+        this.log.error(`Plugin directory: ${pluginDir}`);
+        this.log.error(`Tried paths: ${sensorServerPath} and ${alternativePath}`);
+        this.log.error('Please ensure the plugin is properly installed with all files');
+        this.awtrixLogger.error('SERVER', `Sensor server file not found: ${finalPath}`);
+        return;
+      }
+      
+      this.log.info('Starting AWTRIX Sensor Server...');
+      this.log.debug(`Plugin directory: ${pluginDir}`);
+      this.log.debug(`Sensor server path: ${finalPath}`);
+      this.awtrixLogger.info('SERVER', 'Starting sensor server process');
+      
+      // Start the Python sensor server
+      this.sensorServerProcess = spawn('python3', [finalPath, '8081'], {
+        cwd: path.dirname(finalPath),
+        detached: false,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+      
+      // Handle server output
+      this.sensorServerProcess.stdout?.on('data', (data) => {
+        const output = data.toString().trim();
+        if (output) {
+          this.log.debug(`[Sensor Server] ${output}`);
+        }
+      });
+      
+      this.sensorServerProcess.stderr?.on('data', (data) => {
+        const error = data.toString().trim();
+        if (error) {
+          this.log.warn(`[Sensor Server Error] ${error}`);
+        }
+      });
+      
+      // Handle server exit
+      this.sensorServerProcess.on('exit', (code, signal) => {
+        if (code !== 0) {
+          this.log.warn(`Sensor server exited with code ${code}, signal ${signal}`);
+          this.awtrixLogger.warn('SERVER', `Sensor server exited with code ${code}`);
+        } else {
+          this.log.info('Sensor server stopped gracefully');
+          this.awtrixLogger.info('SERVER', 'Sensor server stopped gracefully');
+        }
+      });
+      
+      // Handle server errors
+      this.sensorServerProcess.on('error', (error) => {
+        this.log.error(`Failed to start sensor server: ${error.message}`);
+        this.awtrixLogger.error('SERVER', `Failed to start sensor server: ${error.message}`);
+      });
+      
+      // Give the server a moment to start
+      setTimeout(() => {
+        if (this.sensorServerProcess && !this.sensorServerProcess.killed) {
+          this.log.info('AWTRIX Sensor Server started successfully on port 8081');
+          this.log.info('Access the sensor selector at: http://localhost:8081');
+          this.log.info('Or externally at: http://[RASPBERRY_PI_IP]:8081');
+          this.awtrixLogger.info('SERVER', 'Sensor server started successfully on port 8081');
+        }
+      }, 2000);
+      
+    } catch (error) {
+      this.log.error(`Error starting sensor server: ${error}`);
+      this.awtrixLogger.error('SERVER', `Error starting sensor server: ${error}`);
+    }
+  }
+
+  public stopSensorServer(): void {
+    if (this.sensorServerProcess && !this.sensorServerProcess.killed) {
+      this.log.info('Stopping AWTRIX Sensor Server...');
+      this.awtrixLogger.info('SERVER', 'Stopping sensor server');
+      
+      this.sensorServerProcess.kill('SIGTERM');
+      
+      // Force kill after 5 seconds if it doesn't stop gracefully
+      setTimeout(() => {
+        if (this.sensorServerProcess && !this.sensorServerProcess.killed) {
+          this.log.warn('Force killing sensor server...');
+          this.sensorServerProcess.kill('SIGKILL');
+        }
+      }, 5000);
+    }
   }
 }

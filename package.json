@@ -1,6 +1,6 @@
 {
   "name": "homebridge-awtrix-sensors",
-  "version": "1.0.36",
+  "version": "1.0.40",
   "description": "Homebridge plugin for AWTRIX LED matrix displays with MQTT sensor integration",
   "main": "lib/index.js",
   "scripts": {
@@ -59,9 +59,15 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
+    "INSTALLATION.md",
     "icon.png",
     "test-gui-direct.html",
-    "config.schema.json"
+    "config.schema.json",
+    "sensor-selector.html",
+    "start-sensor-server.py",
+    "start-sensor-server.sh",
+    "install-sensor-server.sh",
+    "SENSOR_SELECTOR_README.md"
   ],
   "homebridge": {
     "pluginAlias": "AwtrixSensors",
