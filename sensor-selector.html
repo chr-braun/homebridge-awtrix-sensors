@@ -1182,9 +1182,6 @@
         </div>
 
         <div class="actions">
-            <button class="btn btn-primary" onclick="loadSensors()">
-                <i class="fas fa-sync"></i> Sensoren laden
-            </button>
             <button class="btn btn-info" onclick="showRulesSection()" id="rules-btn" disabled>
                 <i class="fas fa-cogs"></i> Regeln konfigurieren
             </button>
@@ -1211,9 +1208,17 @@
                 this.isRaspberryPi = this.detectRaspberryPi();
                 
                 this.initializeEventListeners();
-                this.loadSensors();
                 this.loadRules();
                 this.showRaspberryPiInfo();
+                
+                // Load sensors immediately when page loads
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        this.loadSensors();
+                    });
+                } else {
+                    this.loadSensors();
+                }
             }
 
             detectRaspberryPi() {
@@ -1235,6 +1240,7 @@
             initializeEventListeners() {
                 // Auto-load sensors on page load
                 window.addEventListener('load', () => {
+                    console.log('Seite geladen, lade Sensoren...');
                     this.loadSensors();
                 });
 
@@ -1308,8 +1314,14 @@
 
             async loadSensors() {
                 try {
+                    console.log('Lade Sensoren...');
                     // Simulate loading sensors (in real implementation, this would fetch from MQTT)
                     await this.simulateSensorLoading();
+                    
+                    // Initialize filteredSensors with allSensors
+                    this.filteredSensors = [...this.allSensors];
+                    
+                    console.log(`${this.allSensors.length} Sensoren geladen`);
                     this.displaySensors();
                     
                     // Raspberry Pi: Zeige Performance-Info
